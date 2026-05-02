@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniConvert - Universal Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #333;
+            --secondary: #666;
+            --accent: #999;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #1a1a1a;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+        
+        .header {
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 40px 0;
+            margin-bottom: 40px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        
+        .header h1 {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+        
+        .glass {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            padding: 32px;
+        }
+        
+        .theme-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+        
+        .theme-btn {
+            padding: 10px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .theme-btn:hover {
+            border-color: #d0d0d0;
+            background: #fafafa;
+        }
+        
+        .theme-btn.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+        
+        .converter-tabs-header {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 32px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 16px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+        }
+        
+        .tab-btn {
+            transition: all 0.2s ease;
+            border: none;
+            background: transparent;
+            color: var(--secondary);
+            font-weight: 500;
+            font-size: 14px;
+            padding: 8px 0;
+            position: relative;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .tab-btn::after {
+            content: '';
+            position: absolute;
+            bottom: -18px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transition: transform 0.2s ease;
+        }
+        
+        .tab-btn.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .tab-btn.active::after {
+            transform: scaleX(1);
+        }
+        
+        .tab-btn:hover:not(.active) {
+            color: var(--accent);
+        }
+        
+        .converter-section {
+            background: #fafafa;
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .converter-section label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d0d0d0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            color: #333;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+        
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.08);
+            background: white;
+        }
+        
+        .accent-glow:focus { 
+            outline: none; 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.08);
+        }
+        
+        button[id*="ConvertBtn"] {
+            width: 100%;
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 16px;
+        }
+        
+        button[id*="ConvertBtn"]:hover {
+            background: var(--secondary);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+        
+        .result-box {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .result-box p {
+            color: #333;
+            font-size: 14px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 32px 0;
+            color: #999;
+            font-size: 13px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 48px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <!-- Header -->
+    <div class="header">
+        <div class="container">
+            <h1>OmniConvert</h1>
+            <p>The Universal Unit & Currency Converter</p>
+            <div class="theme-selector" id="themeSelector"></div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="glass">
+            <!-- Converter Type Tabs -->
+            <div class="converter-tabs-header">
+                <button class="tab-btn active" data-converter="currency">Currency</button>
+                <button class="tab-btn" data-converter="length">Length</button>
+                <button class="tab-btn" data-converter="weight">Weight</button>
+                <button class="tab-btn" data-converter="time">Time</button>
+                <button class="tab-btn" data-converter="temperature">Temperature</button>
+                <button class="tab-btn" data-converter="volume">Volume</button>
+                <button class="tab-btn" data-converter="speed">Speed</button>
+                <button class="tab-btn" data-converter="area">Area</button>
+                <button class="tab-btn" data-converter="gaming">Gaming</button>
+                <button class="tab-btn" data-converter="language">Language</button>
+            </div>
+
+            <!-- Converter Container -->
+            <!-- Converter Container -->
+            <div id="converterContent" class="space-y-6">
+                <!-- Currency Converter (default) -->
+                <div id="currency-converter" class="converter-tab">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div class="converter-section">
+                            <label>From Currency</label>
+                            <input type="number" id="currencyFromValue" placeholder="Enter amount" value="1">
+                            <select id="currencyFromUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                        <div class="converter-section">
+                            <label>To Currency</label>
+                            <input type="number" id="currencyToValue" placeholder="Result" readonly>
+                            <select id="currencyToUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Length Converter -->
+                <div id="length-converter" class="converter-tab hidden">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div class="converter-section">
+                            <label>From Length</label>
+                            <input type="number" id="lengthFromValue" placeholder="Enter value" value="1">
+                            <select id="lengthFromUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                        <div class="converter-section">
+                            <label>To Length</label>
+                            <input type="number" id="lengthToValue" placeholder="Result" readonly>
+                            <select id="lengthToUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weight Converter -->
+                <div id="weight-converter" class="converter-tab hidden">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div class="converter-section">
+                            <label>From Weight</label>
+                            <input type="number" id="weightFromValue" placeholder="Enter value" value="1">
+                            <select id="weightFromUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                        <div class="converter-section">
+                            <label>To Weight</label>
+                            <input type="number" id="weightToValue" placeholder="Result" readonly>
+                            <select id="weightToUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Converter -->
+                <div id="time-converter" class="converter-tab hidden">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div class="converter-section">
+                            <label>From Time</label>
+                            <input type="number" id="timeFromValue" placeholder="Enter value" value="1">
+                            <select id="timeFromUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                        <div class="converter-section">
+                            <label>To Time</label>
+                            <input type="number" id="timeToValue" placeholder="Result" readonly>
+                            <select id="timeToUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Temperature Converter -->
+                <div id="temperature-converter" class="converter-tab hidden">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div class="converter-section">
+                            <label>From Temperature</label>
+                            <input type="number" id="tempFromValue" placeholder="Enter value" value="0">
+                            <select id="tempFromUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                        <div class="converter-section">
+                            <label>To Temperature</label>
+                            <input type="number" id="tempToValue" placeholder="Result" readonly>
+                            <select id="tempToUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Volume Converter -->
+                <div id="volume-converter" class="converter-tab hidden">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div class="converter-section">
+                            <label>From Volume</label>
+                            <input type="number" id="volumeFromValue" placeholder="Enter value" value="1">
+                            <select id="volumeFromUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                        <div class="converter-section">
+                            <label>To Volume</label>
+                            <input type="number" id="volumeToValue" placeholder="Result" readonly>
+                            <select id="volumeToUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Speed Converter -->
+                <div id="speed-converter" class="converter-tab hidden">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div class="converter-section">
+                            <label>From Speed</label>
+                            <input type="number" id="speedFromValue" placeholder="Enter value" value="1">
+                            <select id="speedFromUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                        <div class="converter-section">
+                            <label>To Speed</label>
+                            <input type="number" id="speedToValue" placeholder="Result" readonly>
+                            <select id="speedToUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Area Converter -->
+                <div id="area-converter" class="converter-tab hidden">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div class="converter-section">
+                            <label>From Area</label>
+                            <input type="number" id="areaFromValue" placeholder="Enter value" value="1">
+                            <select id="areaFromUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                        <div class="converter-section">
+                            <label>To Area</label>
+                            <input type="number" id="areaToValue" placeholder="Result" readonly>
+                            <select id="areaToUnit" class="accent-glow" style="margin-top: 8px;">
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gaming Converter -->
+                <div id="gaming-converter" class="converter-tab hidden">
+                    <div class="converter-section">
+                        <label>Select Game</label>
+                        <select id="gamingGame" class="accent-glow" style="margin-bottom: 16px;">
+                        </select>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div>
+                                <label>XP Amount</label>
+                                <input type="number" id="gamingXP" placeholder="Enter XP" value="1000">
+                            </div>
+                            <div>
+                                <label>Skill Level</label>
+                                <select id="gamingSkill" class="accent-glow">
+                                    <option value="casual">Casual (0.5x)</option>
+                                    <option value="normal">Normal (1x)</option>
+                                    <option value="hardcore">Hardcore (2x)</option>
+                                    <option value="speedrunner">Speedrunner (4x)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="gamingResult" class="hidden result-box">
+                        <p id="gamingResultText" style="white-space: pre-line;"></p>
+                    </div>
+                </div>
+
+                <!-- Language Translator -->
+                <div id="language-converter" class="converter-tab hidden">
+                    <div class="converter-section">
+                        <label>Text to Translate</label>
+                        <textarea id="languageInput" placeholder="Enter word or phrase" rows="2" style="margin-bottom: 16px;"></textarea>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div>
+                                <label>From Language</label>
+                                <select id="languageFromLang" class="accent-glow">
+                                    <option value="english">English</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>To Language</label>
+                                <select id="languageToLang" class="accent-glow">
+                                </select>
+                            </div>
+                        </div>
+                        <button id="languageConvertBtn" style="width: 100%; padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 16px;">
+                            Translate
+                        </button>
+                    </div>
+                    <div id="languageResult" class="hidden result-box">
+                        <p id="languageResultText"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
