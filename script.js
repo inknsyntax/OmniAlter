@@ -1,703 +1,679 @@
-// OmniConvert - Universal Converter with Dynamic Theming
-// ======================================================
+/* ═══════════════════════════════════════════════════════════════
+   OmniConvert — app.js
+   Author: OmniConvert
+   Description: All logic for OmniConvert — the universal
+                translator & converter app.
+                Requires: Anthropic API key injected at runtime
+                          via the claude.ai artifact environment.
+   ═══════════════════════════════════════════════════════════════ */
 
-// THEME CONFIGURATION
-const THEMES = {
-    clean: {
-        primary: '#333',
-        secondary: '#666',
-        accent: '#999'
-    },
-    currency: {
-        primary: '#4ade80',
-        secondary: '#fcd34d',
-        accent: '#22c55e'
-    },
-    gaming: {
-        primary: '#10b981',
-        secondary: '#6b7280',
-        accent: '#059669'
-    },
-    historical: {
-        primary: '#f59e0b',
-        secondary: '#92400e',
-        accent: '#d97706'
-    },
-    fantasy: {
-        primary: '#a855f7',
-        secondary: '#7c3aed',
-        accent: '#9333ea'
-    },
-    length: {
-        primary: '#f97316',
-        secondary: '#fbbf24',
-        accent: '#ea580c'
-    },
-    weight: {
-        primary: '#6b7280',
-        secondary: '#374151',
-        accent: '#4b5563'
-    },
-    language: {
-        primary: '#6366f1',
-        secondary: '#8b5cf6',
-        accent: '#4f46e5'
-    },
-    time: {
-        primary: '#06b6d4',
-        secondary: '#0891b2',
-        accent: '#0e7490'
-    },
-    temperature: {
-        primary: '#ef4444',
-        secondary: '#3b82f6',
-        accent: '#dc2626'
-    },
-    volume: {
-        primary: '#14b8a6',
-        secondary: '#06b6d4',
-        accent: '#0d9488'
-    },
-    area: {
-        primary: '#84cc16',
-        secondary: '#22c55e',
-        accent: '#65a30d'
-    },
-    speed: {
-        primary: '#0ea5e9',
-        secondary: '#06b6d4',
-        accent: '#0284c7'
-    }
-};
+'use strict';
 
-// CURRENCIES - 180+ currencies
-const CURRENCIES = {
-    'USD': 1.00, 'EUR': 0.92, 'GBP': 0.79, 'JPY': 149.5, 'CAD': 1.36,
-    'AUD': 1.52, 'NZD': 1.67, 'CHF': 0.88, 'CNY': 7.24, 'INR': 83.12,
-    'MXN': 17.05, 'SGD': 1.34, 'HKD': 7.85, 'NOK': 10.50, 'SEK': 10.45,
-    'DKK': 6.87, 'CZK': 23.50, 'PLN': 3.97, 'HUF': 366.50, 'RON': 4.58,
-    'BGN': 1.81, 'HRK': 6.97, 'RUB': 96.50, 'TRY': 32.45, 'ZAR': 18.75,
-    'BRL': 4.97, 'ARS': 850.00, 'CLP': 856.50, 'COP': 3950.00, 'PEN': 3.68,
-    'UYU': 38.45, 'KRW': 1319.50, 'IDR': 15847.50, 'THB': 35.22,
-    'MYR': 4.73, 'PHP': 55.80, 'VND': 24365.00, 'PKR': 278.50, 'BDT': 104.55,
-    'LKR': 329.75, 'NPR': 132.50, 'IQD': 1310.50, 'AED': 3.67, 'SAR': 3.75,
-    'KWD': 0.308, 'BHD': 0.377, 'OMR': 0.385, 'QAR': 3.64, 'JOD': 0.709,
-    'LBP': 89500.00, 'EGP': 30.95, 'TND': 3.13, 'MAD': 10.13, 'ZWL': 15850.00,
-    'NGN': 1234.50, 'GHS': 12.65, 'KES': 156.50, 'UGX': 3785.50, 'ETB': 55.48,
-    'XAF': 617.50, 'XOF': 617.50, 'XCD': 2.70, 'TTD': 6.78,
-    'JMD': 155.50, 'BMD': 1.00, 'BSD': 1.00, 'BBD': 2.02, 'GYD': 209.50,
-    'SRD': 33.65, 'ANG': 1.79, 'AWG': 1.79, 'FKP': 0.79, 'GIP': 0.79,
-    'SHP': 0.79, 'IMP': 0.79, 'GGP': 0.79, 'JEP': 0.79, 'KYD': 0.83,
-    'BZD': 2.02, 'XPF': 109.50, 'WST': 2.70, 'VUV': 117.50, 'FJD': 2.23,
-    'PGK': 3.60, 'SBD': 8.40, 'TOP': 2.35, 'MUR': 44.75, 'SCR': 13.25,
-    'MGA': 4483.50, 'MWK': 1485.00, 'ZMW': 26.45, 'BWP': 13.65, 'NAD': 18.75,
-    'SZL': 18.75, 'LSL': 18.75, 'ILS': 3.68, 'KZT': 489.50, 'KGS': 85.50,
-    'TJS': 10.95, 'TMT': 3.50, 'UZS': 12840.00, 'AZN': 1.70, 'GEL': 2.68,
-    'AMD': 387.50, 'BYN': 3.25, 'UAH': 39.25, 'MNT': 3410.00, 'BND': 1.34,
-    'LAK': 21350.00, 'MMK': 2100.00, 'KHR': 4125.00, 'BTN': 83.12, 'MVR': 15.40,
-    'AFN': 70.85, 'XAG': 0.025, 'XAU': 0.00051, 'XPD': 0.0012, 'XPT': 0.0010,
-    'BTC': 0.000024, 'ETH': 0.00036, 'DOGE': 14.50
-};
+/* ═══════════════════════════════════════════════
+   THEME TOGGLE
+   ═══════════════════════════════════════════════ */
 
-// LANGUAGES - 150+ languages with real and fantasy
-const LANGUAGES = {
-    english: { name: 'English', code: 'en', sample: 'Hello world', type: 'real' },
-    spanish: { name: 'Spanish', code: 'es', sample: 'Hola mundo', type: 'real' },
-    french: { name: 'French', code: 'fr', sample: 'Bonjour le monde', type: 'real' },
-    german: { name: 'German', code: 'de', sample: 'Hallo Welt', type: 'real' },
-    italian: { name: 'Italian', code: 'it', sample: 'Ciao mondo', type: 'real' },
-    portuguese: { name: 'Portuguese', code: 'pt', sample: 'Olá mundo', type: 'real' },
-    russian: { name: 'Russian', code: 'ru', sample: 'Привет мир', type: 'real' },
-    japanese: { name: 'Japanese', code: 'ja', sample: 'こんにちは世界', type: 'real' },
-    chinese: { name: 'Chinese (Mandarin)', code: 'zh', sample: '你好世界', type: 'real' },
-    korean: { name: 'Korean', code: 'ko', sample: '안녕하세요 세계', type: 'real' },
-    arabic: { name: 'Arabic', code: 'ar', sample: 'مرحبا بالعالم', type: 'real' },
-    hindi: { name: 'Hindi', code: 'hi', sample: 'नमस्ते दुनिया', type: 'real' },
-    turkish: { name: 'Turkish', code: 'tr', sample: 'Merhaba dünya', type: 'real' },
-    polish: { name: 'Polish', code: 'pl', sample: 'Cześć świete', type: 'real' },
-    dutch: { name: 'Dutch', code: 'nl', sample: 'Hallo wereld', type: 'real' },
-    swedish: { name: 'Swedish', code: 'sv', sample: 'Hej världen', type: 'real' },
-    greek: { name: 'Greek', code: 'el', sample: 'Γεια σας κόσμε', type: 'real' },
-    czech: { name: 'Czech', code: 'cs', sample: 'Ahoj světe', type: 'real' },
-    thai: { name: 'Thai', code: 'th', sample: 'สวัสดีชาวโลก', type: 'real' },
-    vietnamese: { name: 'Vietnamese', code: 'vi', sample: 'Xin chào thế giới', type: 'real' },
-    elvish: {
-        name: 'Elvish (Quenya)',
-        code: 'elf',
-        sample: 'Aiya Arda',
-        type: 'fantasy',
-        translations: {
-            'hello': 'Aiya',
-            'goodbye': 'Namárië',
-            'friend': 'Mellon',
-            'fire': 'Naur',
-            'water': 'Nen',
-            'sword': 'Araneleth',
-            'thank you': 'Lanta',
-            'yes': 'Hîr',
-            'no': 'Lá'
-        }
-    },
-    klingon: {
-        name: 'Klingon',
-        code: 'kli',
-        sample: 'Qapla\'',
-        type: 'fantasy',
-        translations: {
-            'hello': 'Qapla\'',
-            'goodbye': 'maj',
-            'friend': 'jup',
-            'fire': 'Qapla\'',
-            'water': 'bIj',
-            'sword': 'bat\'leth',
-            'thank you': 'qapla\'',
-            'yes': 'HIja\'',
-            'no': 'ghobe\''
-        }
-    },
-    navi: {
-        name: 'Na\'vi (Avatar)',
-        code: 'nav',
-        sample: 'Oel ngati kameie',
-        type: 'fantasy',
-        translations: {
-            'hello': 'Oel ngati kameie',
-            'friend': 'Yerik',
-            'fire': 'Ur',
-            'water': 'Ystupele',
-            'sword': 'Tsko',
-            'thank you': 'Irayo',
-            'yes': 'Ong',
-            'no': 'Kehe'
-        }
-    },
-    pirate: {
-        name: 'Pirate English',
-        code: 'pir',
-        sample: 'Ahoy matey',
-        type: 'fantasy',
-        translations: {
-            'hello': 'Ahoy matey',
-            'friend': 'Shipmate',
-            'fire': 'Cannon fire',
-            'water': 'Briny deep',
-            'sword': 'Cutlass',
-            'thank you': 'Thankee',
-            'yes': 'Aye',
-            'no': 'Nay'
-        }
-    }
-};
-
-// LENGTH CONVERSIONS - 40+ units
-const LENGTH_UNITS = {
-    'm': { name: 'Meter', base: 1 },
-    'km': { name: 'Kilometer', base: 0.001 },
-    'cm': { name: 'Centimeter', base: 100 },
-    'mm': { name: 'Millimeter', base: 1000 },
-    'mi': { name: 'Mile', base: 0.000621371 },
-    'yd': { name: 'Yard', base: 1.09361 },
-    'ft': { name: 'Foot', base: 3.28084 },
-    'in': { name: 'Inch', base: 39.3701 },
-    'nmi': { name: 'Nautical Mile', base: 0.000539957 },
-    'um': { name: 'Micrometer', base: 1000000 },
-    'league': { name: 'League', base: 0.000207 },
-    'chain': { name: 'Chain', base: 0.0497097 },
-    'furlong': { name: 'Furlong', base: 0.00497097 },
-    'rod': { name: 'Rod', base: 0.198839 },
-    'fathom': { name: 'Fathom', base: 0.546807 }
-};
-
-// WEIGHT CONVERSIONS - 40+ units
-const WEIGHT_UNITS = {
-    'kg': { name: 'Kilogram', base: 1 },
-    'g': { name: 'Gram', base: 1000 },
-    'mg': { name: 'Milligram', base: 1000000 },
-    'lbs': { name: 'Pound', base: 2.20462 },
-    'oz': { name: 'Ounce', base: 35.274 },
-    't': { name: 'Metric Ton', base: 0.001 },
-    'stone': { name: 'Stone', base: 0.157473 },
-    'ton': { name: 'Ton (US)', base: 0.00110231 },
-    'grain': { name: 'Grain', base: 15432.4 },
-    'dram': { name: 'Dram', base: 564.383 },
-    'troy_oz': { name: 'Troy Ounce', base: 32.1507 },
-    'carat': { name: 'Carat', base: 5000 },
-    'tael': { name: 'Tael', base: 26.6667 }
-};
-
-// TIME CONVERSIONS
-const TIME_UNITS = {
-    's': { name: 'Second', base: 1 },
-    'ms': { name: 'Millisecond', base: 1000 },
-    'min': { name: 'Minute', base: 1/60 },
-    'h': { name: 'Hour', base: 1/3600 },
-    'd': { name: 'Day', base: 1/86400 },
-    'w': { name: 'Week', base: 1/604800 },
-    'mo': { name: 'Month', base: 1/2592000 },
-    'y': { name: 'Year', base: 1/31536000 }
-};
-
-// TEMPERATURE
-const TEMPERATURE_CONVERSIONS = {
-    'C': 'Celsius',
-    'F': 'Fahrenheit',
-    'K': 'Kelvin'
-};
-
-// VOLUME CONVERSIONS - 30+ units
-const VOLUME_UNITS = {
-    'L': { name: 'Liter', base: 1 },
-    'mL': { name: 'Milliliter', base: 1000 },
-    'kL': { name: 'Kiloliter', base: 0.001 },
-    'cm3': { name: 'Cubic Centimeter', base: 1000 },
-    'm3': { name: 'Cubic Meter', base: 0.001 },
-    'gal_us': { name: 'US Gallon', base: 0.264172 },
-    'gal_uk': { name: 'UK Gallon', base: 0.219969 },
-    'fl_oz_us': { name: 'US Fluid Ounce', base: 33.814 },
-    'pt_us': { name: 'US Pint', base: 2.11338 },
-    'qt_us': { name: 'US Quart', base: 1.05669 },
-    'cup_us': { name: 'US Cup', base: 4.22675 },
-    'tbsp': { name: 'Tablespoon', base: 67.628 },
-    'tsp': { name: 'Teaspoon', base: 202.884 },
-    'bbl': { name: 'Barrel', base: 0.00628981 }
-};
-
-// SPEED CONVERSIONS
-const SPEED_UNITS = {
-    'm/s': { name: 'Meter per Second', base: 1 },
-    'km/h': { name: 'Kilometer per Hour', base: 3.6 },
-    'mph': { name: 'Mile per Hour', base: 2.23694 },
-    'kt': { name: 'Knot', base: 1.94384 },
-    'ft/s': { name: 'Foot per Second', base: 3.28084 }
-};
-
-// AREA CONVERSIONS
-const AREA_UNITS = {
-    'm2': { name: 'Square Meter', base: 1 },
-    'km2': { name: 'Square Kilometer', base: 0.000001 },
-    'cm2': { name: 'Square Centimeter', base: 10000 },
-    'mi2': { name: 'Square Mile', base: 0.000000386102 },
-    'ft2': { name: 'Square Foot', base: 10.7639 },
-    'hectare': { name: 'Hectare', base: 0.0001 },
-    'acre': { name: 'Acre', base: 0.000247105 }
-};
-
-// GAMING DATA - 200+ games
-const GAMES = {
-    'wow': { name: 'World of Warcraft', type: 'mmo', baseXpPerHour: 50 },
-    'elden': { name: 'Elden Ring', type: 'souls', baseXpPerHour: 35 },
-    'skyrim': { name: 'Skyrim', type: 'rpg', baseXpPerHour: 40 },
-    'minecraft': { name: 'Minecraft', type: 'sandbox', baseXpPerHour: 60 },
-    'baldur3': { name: 'Baldurs Gate 3', type: 'crpg', baseXpPerHour: 45 },
-    'witcher3': { name: 'Witcher 3', type: 'action-rpg', baseXpPerHour: 48 },
-    'ffxiv': { name: 'Final Fantasy XIV', type: 'mmo', baseXpPerHour: 55 },
-    'genshin': { name: 'Genshin Impact', type: 'action-rpg', baseXpPerHour: 60 },
-    'valorant': { name: 'Valorant', type: 'fps', baseXpPerHour: 75 },
-    'csgo': { name: 'Counter-Strike 2', type: 'fps', baseXpPerHour: 70 },
-    'apex': { name: 'Apex Legends', type: 'fps', baseXpPerHour: 68 },
-    'fortnite': { name: 'Fortnite', type: 'fps', baseXpPerHour: 80 },
-    'darksouls': { name: 'Dark Souls', type: 'souls', baseXpPerHour: 30 },
-    'darksouls3': { name: 'Dark Souls III', type: 'souls', baseXpPerHour: 33 },
-    'bloodborne': { name: 'Bloodborne', type: 'souls', baseXpPerHour: 32 },
-    'sekiro': { name: 'Sekiro', type: 'souls', baseXpPerHour: 28 },
-    'nioh': { name: 'Nioh', type: 'souls', baseXpPerHour: 35 },
-    'zelda_bw': { name: 'Zelda Breath of Wild', type: 'adventure', baseXpPerHour: 50 },
-    'rdr2': { name: 'Red Dead 2', type: 'action-adventure', baseXpPerHour: 40 },
-    'gta6': { name: 'GTA VI', type: 'action-adventure', baseXpPerHour: 50 },
-    'pokemon': { name: 'Pokemon (latest)', type: 'rpg', baseXpPerHour: 85 },
-    'nba2k': { name: 'NBA 2K24', type: 'sports', baseXpPerHour: 90 },
-    'forza': { name: 'Forza Motorsport', type: 'racing', baseXpPerHour: 100 },
-    'hades': { name: 'Hades', type: 'roguelike', baseXpPerHour: 120 },
-    'hollow_knight': { name: 'Hollow Knight', type: 'metroidvania', baseXpPerHour: 48 },
-    'terraria': { name: 'Terraria', type: 'sandbox', baseXpPerHour: 65 },
-    'stardew': { name: 'Stardew Valley', type: 'life-sim', baseXpPerHour: 55 },
-    'diablo4': { name: 'Diablo IV', type: 'arpg', baseXpPerHour: 65 },
-    'poe': { name: 'Path of Exile', type: 'arpg', baseXpPerHour: 52 },
-    'runescape': { name: 'RuneScape 3', type: 'mmo', baseXpPerHour: 35 },
-    'osrs': { name: 'Old School RuneScape', type: 'mmo', baseXpPerHour: 30 },
-    'xcom2': { name: 'XCOM 2', type: 'strategy', baseXpPerHour: 40 },
-    'civ6': { name: 'Civilization VI', type: 'strategy', baseXpPerHour: 30 },
-    'slay_spire': { name: 'Slay the Spire', type: 'deck-builder', baseXpPerHour: 130 },
-    'isaac': { name: 'Binding of Isaac', type: 'roguelike', baseXpPerHour: 140 },
-    'cuphead': { name: 'Cuphead', type: 'platformer', baseXpPerHour: 40 },
-    'celeste': { name: 'Celeste', type: 'platformer', baseXpPerHour: 35 }
-};
-
-const SKILL_MULTIPLIERS = {
-    casual: 0.5,
-    normal: 1,
-    hardcore: 2,
-    speedrunner: 4
-};
-
-// DOM Elements
-const tabButtons = document.querySelectorAll('.tab-btn');
-const converterTabs = document.querySelectorAll('.converter-tab');
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    initializeThemeSelector();
-    initializeTabs();
-    initializeConverters();
-    populateSelects();
-    setTheme('clean');
-});
-
-// Theme Selector Setup
-function initializeThemeSelector() {
-    const selector = document.getElementById('themeSelector');
-    const toggleBtn = document.getElementById('themeToggleBtn');
-    if (!selector) return;
-    
-    // Hide theme selector on mobile by default
-    if (window.innerWidth <= 768) {
-        selector.classList.add('hidden');
-    }
-    
-    // Theme toggle button for mobile
-    if (toggleBtn) {
-        toggleBtn.onclick = () => {
-            selector.classList.toggle('hidden');
-        };
-    }
-    
-    Object.keys(THEMES).forEach(themeId => {
-        const themeName = themeId.charAt(0).toUpperCase() + themeId.slice(1);
-        const btn = document.createElement('button');
-        btn.className = `theme-btn ${themeId === 'clean' ? 'active' : ''}`;
-        btn.textContent = themeName;
-        btn.onclick = () => {
-            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            setTheme(themeId);
-            // Close theme selector on mobile after selection
-            if (window.innerWidth <= 768) {
-                selector.classList.add('hidden');
-            }
-        };
-        selector.appendChild(btn);
-    });
+/**
+ * Toggle between dark and light theme on the <html> element.
+ * Updates the theme button icon accordingly.
+ */
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.querySelector('.theme-btn').textContent = isDark ? '☀️' : '🌙';
 }
 
-// Dynamic Theming
-function setTheme(themeId) {
-    const theme = THEMES[themeId] || {
-        primary: '#333',
-        secondary: '#666',
-        accent: '#999'
-    };
-    
-    const root = document.documentElement;
-    root.style.setProperty('--primary', theme.primary);
-    root.style.setProperty('--secondary', theme.secondary);
-    root.style.setProperty('--accent', theme.accent);
+/* ═══════════════════════════════════════════════
+   PANEL ROUTING
+   ═══════════════════════════════════════════════ */
+
+/**
+ * Switch the active panel via a tab button click.
+ * @param {HTMLElement|null} btn  - The tab button that was clicked.
+ * @param {string}           panelId - ID suffix of the panel (e.g. 'language').
+ */
+function switchTab(btn, panelId) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-pill').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + panelId).classList.add('active');
+  if (btn) btn.classList.add('active');
 }
 
-// Tab Switching
-function initializeTabs() {
-    tabButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const converterType = btn.dataset.converter;
-            
-            tabButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            converterTabs.forEach(tab => tab.classList.add('hidden'));
-            document.getElementById(`${converterType}-converter`)?.classList.remove('hidden');
-        });
-    });
+/**
+ * Switch panel via a nav-pill click (header navigation).
+ * Keeps tab row and nav-pill in sync.
+ * @param {string} id - Panel ID suffix.
+ */
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  document.querySelectorAll('.nav-pill').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes("'" + id + "'")) {
+      t.classList.add('active');
+    }
+  });
 }
 
-// Populate dropdowns
-function populateSelects() {
-    // Currency
-    const currencyFrom = document.getElementById('currencyFromUnit');
-    const currencyTo = document.getElementById('currencyToUnit');
-    if (currencyFrom) {
-        Object.keys(CURRENCIES).forEach(code => {
-            currencyFrom.innerHTML += `<option value="${code}">${code}</option>`;
-            currencyTo.innerHTML += `<option value="${code}">${code}</option>`;
-        });
-    }
-    
-    // Length
-    const lengthFrom = document.getElementById('lengthFromUnit');
-    const lengthTo = document.getElementById('lengthToUnit');
-    if (lengthFrom) {
-        Object.keys(LENGTH_UNITS).forEach(unit => {
-            lengthFrom.innerHTML += `<option value="${unit}">${LENGTH_UNITS[unit].name}</option>`;
-            lengthTo.innerHTML += `<option value="${unit}">${LENGTH_UNITS[unit].name}</option>`;
-        });
-    }
-    
-    // Weight
-    const weightFrom = document.getElementById('weightFromUnit');
-    const weightTo = document.getElementById('weightToUnit');
-    if (weightFrom) {
-        Object.keys(WEIGHT_UNITS).forEach(unit => {
-            weightFrom.innerHTML += `<option value="${unit}">${WEIGHT_UNITS[unit].name}</option>`;
-            weightTo.innerHTML += `<option value="${unit}">${WEIGHT_UNITS[unit].name}</option>`;
-        });
-    }
-    
-    // Time
-    const timeFrom = document.getElementById('timeFromUnit');
-    const timeTo = document.getElementById('timeToUnit');
-    if (timeFrom) {
-        Object.keys(TIME_UNITS).forEach(unit => {
-            timeFrom.innerHTML += `<option value="${unit}">${TIME_UNITS[unit].name}</option>`;
-            timeTo.innerHTML += `<option value="${unit}">${TIME_UNITS[unit].name}</option>`;
-        });
-    }
-    
-    // Volume
-    const volFrom = document.getElementById('volumeFromUnit');
-    const volTo = document.getElementById('volumeToUnit');
-    if (volFrom) {
-        Object.keys(VOLUME_UNITS).forEach(unit => {
-            volFrom.innerHTML += `<option value="${unit}">${VOLUME_UNITS[unit].name}</option>`;
-            volTo.innerHTML += `<option value="${unit}">${VOLUME_UNITS[unit].name}</option>`;
-        });
-    }
-    
-    // Speed
-    const speedFrom = document.getElementById('speedFromUnit');
-    const speedTo = document.getElementById('speedToUnit');
-    if (speedFrom) {
-        Object.keys(SPEED_UNITS).forEach(unit => {
-            speedFrom.innerHTML += `<option value="${unit}">${SPEED_UNITS[unit].name}</option>`;
-            speedTo.innerHTML += `<option value="${unit}">${SPEED_UNITS[unit].name}</option>`;
-        });
-    }
-    
-    // Area
-    const areaFrom = document.getElementById('areaFromUnit');
-    const areaTo = document.getElementById('areaToUnit');
-    if (areaFrom) {
-        Object.keys(AREA_UNITS).forEach(unit => {
-            areaFrom.innerHTML += `<option value="${unit}">${AREA_UNITS[unit].name}</option>`;
-            areaTo.innerHTML += `<option value="${unit}">${AREA_UNITS[unit].name}</option>`;
-        });
-    }
-    
-    // Temperature
-    const tempFrom = document.getElementById('tempFromUnit');
-    const tempTo = document.getElementById('tempToUnit');
-    if (tempFrom) {
-        Object.keys(TEMPERATURE_CONVERSIONS).forEach(unit => {
-            tempFrom.innerHTML += `<option value="${unit}">${TEMPERATURE_CONVERSIONS[unit]}</option>`;
-            tempTo.innerHTML += `<option value="${unit}">${TEMPERATURE_CONVERSIONS[unit]}</option>`;
-        });
-    }
-    
-    // Gaming
-    const gameSelect = document.getElementById('gamingGame');
-    if (gameSelect) {
-        Object.keys(GAMES).forEach(key => {
-            gameSelect.innerHTML += `<option value="${key}">${GAMES[key].name}</option>`;
-        });
-    }
-    
-    // Language
-    const langSelect = document.getElementById('languageToLang');
-    if (langSelect) {
-        Object.keys(LANGUAGES).forEach(key => {
-            const lang = LANGUAGES[key];
-            langSelect.innerHTML += `<option value="${key}">${lang.name}</option>`;
-        });
-    }
+/* ═══════════════════════════════════════════════
+   GLOBAL SEARCH
+   ═══════════════════════════════════════════════ */
+
+/**
+ * Smart search handler — reads intent from free-form text and
+ * routes the user to the appropriate converter panel.
+ * @param {string} val - Current value of the search input.
+ */
+function handleSearch(val) {
+  const clear = document.getElementById('searchClear');
+  const hint  = document.getElementById('searchHint');
+  clear.style.display = val ? 'block' : 'none';
+  if (!val) { hint.textContent = ''; return; }
+
+  const v = val.toLowerCase();
+
+  if (v.includes('translat') || v.includes('elvish') || v.includes('navi') || v.includes('klingon')) {
+    hint.textContent = '↳ Switching to Language Translator…';
+    setTimeout(() => switchTab(document.querySelector('.tab'), 'language'), 600);
+  } else if (v.includes('usd') || v.includes('eur') || v.includes('currency') || v.includes('doubloon') || v.includes('bitcoin')) {
+    hint.textContent = '↳ Switching to Currency Converter…';
+    setTimeout(() => switchTab(null, 'currency'), 600);
+  } else if (v.includes('kg') || v.includes('lb') || v.includes('km') || v.includes('mile') || v.includes('meter')) {
+    hint.textContent = '↳ Switching to Measurement Converter…';
+    setTimeout(() => switchTab(null, 'measurement'), 600);
+  } else if (v.includes('°') || v.includes('celsius') || v.includes('fahrenheit')) {
+    hint.textContent = '↳ Switching to Temperature Converter…';
+    setTimeout(() => switchTab(null, 'temperature'), 600);
+  } else if (v.includes('secret') || v.includes('easter') || v.includes('pirate') || v.includes('medieval')) {
+    hint.textContent = '↳ Switching to Secret Modes…';
+    setTimeout(() => switchTab(null, 'easter'), 600);
+  } else {
+    hint.textContent = '';
+  }
 }
 
-// Converter Initialization
-function initializeConverters() {
-    ['currencyFromValue', 'currencyFromUnit', 'currencyToUnit'].forEach(id => {
-        document.getElementById(id)?.addEventListener('change', convertCurrency);
-    });
-    document.getElementById('currencyFromValue')?.addEventListener('input', convertCurrency);
-    
-    ['lengthFromValue', 'lengthFromUnit', 'lengthToUnit'].forEach(id => {
-        document.getElementById(id)?.addEventListener('change', convertLength);
-    });
-    document.getElementById('lengthFromValue')?.addEventListener('input', convertLength);
-    
-    ['weightFromValue', 'weightFromUnit', 'weightToUnit'].forEach(id => {
-        document.getElementById(id)?.addEventListener('change', convertWeight);
-    });
-    document.getElementById('weightFromValue')?.addEventListener('input', convertWeight);
-    
-    ['timeFromValue', 'timeFromUnit', 'timeToUnit'].forEach(id => {
-        document.getElementById(id)?.addEventListener('change', convertTime);
-    });
-    document.getElementById('timeFromValue')?.addEventListener('input', convertTime);
-    
-    ['tempFromValue', 'tempFromUnit', 'tempToUnit'].forEach(id => {
-        document.getElementById(id)?.addEventListener('change', convertTemperature);
-    });
-    document.getElementById('tempFromValue')?.addEventListener('input', convertTemperature);
-    
-    ['volumeFromValue', 'volumeFromUnit', 'volumeToUnit'].forEach(id => {
-        document.getElementById(id)?.addEventListener('change', convertVolume);
-    });
-    document.getElementById('volumeFromValue')?.addEventListener('input', convertVolume);
-    
-    ['speedFromValue', 'speedFromUnit', 'speedToUnit'].forEach(id => {
-        document.getElementById(id)?.addEventListener('change', convertSpeed);
-    });
-    document.getElementById('speedFromValue')?.addEventListener('input', convertSpeed);
-    
-    ['areaFromValue', 'areaFromUnit', 'areaToUnit'].forEach(id => {
-        document.getElementById(id)?.addEventListener('change', convertArea);
-    });
-    document.getElementById('areaFromValue')?.addEventListener('input', convertArea);
-    
-    ['gamingGame', 'gamingXP', 'gamingSkill'].forEach(id => {
-        document.getElementById(id)?.addEventListener('change', convertGaming);
-    });
-    document.getElementById('gamingXP')?.addEventListener('input', convertGaming);
-    
-    document.getElementById('languageConvertBtn')?.addEventListener('click', convertLanguage);
+/** Clear the global search input and its hint. */
+function clearSearch() {
+  document.getElementById('globalSearch').value = '';
+  document.getElementById('searchClear').style.display = 'none';
+  document.getElementById('searchHint').textContent = '';
 }
 
-// Conversion Functions
+/* ═══════════════════════════════════════════════
+   CLIPBOARD UTILITY
+   ═══════════════════════════════════════════════ */
+
+/**
+ * Copy the text content of an element to the clipboard.
+ * Temporarily changes the button label to "Copied!".
+ * @param {string} id - ID of the element whose text to copy.
+ */
+function copyResult(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1800);
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   LANGUAGE TRANSLATION  (AI-powered via Claude)
+   ═══════════════════════════════════════════════ */
+
+/**
+ * Language codes that trigger the "easter egg / fun fact" extra context
+ * after the translation response.
+ */
+const EASTER_LANGS = [
+  'Elvish (Sindarin)', 'Elvish (Quenya)', "Na'vi",
+  'Klingon', 'Pirate Speak', 'Shakespearean English',
+  'Old English', 'Valley Girl Slang', 'Gen Z Slang', 'Pig Latin'
+];
+
+/** Swap the From and To language selects. */
+function swapLanguages() {
+  const f = document.getElementById('langFrom');
+  const t = document.getElementById('langTo');
+  [f.value, t.value] = [t.value, f.value];
+}
+
+/**
+ * Populate the language input with a sample text.
+ * @param {string} text - Sample string to load.
+ */
+function setLangExample(text) {
+  document.getElementById('langInput').value = text;
+}
+
+/**
+ * Send the input text to Claude for context-aware, slang-aware translation.
+ * Handles fictional/historical languages and adds an easter-egg fun fact
+ * when an exotic target language is selected.
+ */
+async function translateText() {
+  const input    = document.getElementById('langInput').value.trim();
+  if (!input) return;
+
+  const from     = document.getElementById('langFrom').value;
+  const to       = document.getElementById('langTo').value;
+  const btn      = document.getElementById('translateBtn');
+  const resultEl = document.getElementById('langResultText');
+  const easterEl = document.getElementById('langEasterEgg');
+
+  // UI: loading state
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Translating…';
+  resultEl.style.fontStyle = 'italic';
+  resultEl.style.color = 'var(--text3)';
+  resultEl.textContent = 'Thinking…';
+  easterEl.classList.remove('show');
+
+  const isEaster = EASTER_LANGS.includes(to);
+
+  let systemPrompt = `You are an expert multilingual translator with deep knowledge of linguistics, slang, idioms, cultural context, fictional languages, and historical dialects.
+
+Your job:
+1. Translate text accurately and naturally
+2. Preserve slang, idioms, and cultural meaning — not just literal words
+3. If translating to a fictional language (Elvish, Na'vi, Klingon), use authentic words and grammar from those languages, supplemented with romanized approximations where needed
+4. If translating to a historical dialect (Old English, Shakespearean), be accurate and authentic
+5. Understand context and produce the most natural translation
+6. Return ONLY the translated text, nothing else. No explanations, no brackets, no prefixes.`;
+
+  const userPrompt = `Translate the following from ${from === 'auto' ? 'the detected language' : from} to ${to}:\n\n"${input}"`;
+
+  if (isEaster) {
+    systemPrompt += `\n\nIMPORTANT: After the translation, on a new line starting with "CONTEXT:" add one fun sentence about the language/dialect.`;
+  }
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+
+    const data = await response.json();
+    const full  = data.content?.[0]?.text || '';
+    const parts = full.split('\nCONTEXT:');
+    const translation = parts[0].replace(/^"|"$/g, '').trim();
+    const context     = parts[1] ? parts[1].trim() : null;
+
+    resultEl.textContent   = translation;
+    resultEl.style.fontStyle = 'normal';
+    resultEl.style.color     = 'var(--text)';
+
+    if (isEaster && context) {
+      easterEl.innerHTML = `<strong>✨ Fun Fact</strong>${context}`;
+      easterEl.classList.add('show');
+    }
+  } catch (e) {
+    resultEl.textContent = 'Translation failed. Please try again.';
+    resultEl.style.color = 'var(--red)';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '✨ Translate';
+}
+
+/* ═══════════════════════════════════════════════
+   CURRENCY CONVERTER
+   ═══════════════════════════════════════════════ */
+
+/**
+ * Approximate exchange rates relative to 1 USD.
+ * These are baked-in estimates; for production use, swap with a live API.
+ */
+const RATES = {
+  USD: 1,       EUR: 0.92,    GBP: 0.79,
+  JPY: 149.5,   CAD: 1.36,    AUD: 1.53,
+  CHF: 0.89,    CNY: 7.24,    INR: 83.1,
+  MXN: 17.15,   BRL: 4.97,    KRW: 1325,
+  SGD: 1.34,    BTC: 0.0000156, ETH: 0.000425
+};
+
+/**
+ * Easter-egg historical / fictional "currencies".
+ * rate = number of units per 1 USD (purchasing-power approximation).
+ */
+const HISTORICAL = {
+  GOLD_DOUBLOON:  { rate: 0.022, symbol: '🏴‍☠️', name: 'Gold Doubloons',   era: 'Pirate Era (1600–1750)',           note: "A Spanish gold doubloon was worth roughly 4 Spanish pesos. Arrr!" },
+  SILVER_COIN:    { rate: 0.5,   symbol: '⚔️',  name: 'Silver Shillings', era: 'Medieval England (1200s)',         note: "A shilling could buy a day's labour from a skilled craftsman." },
+  ROMAN_DENARIUS: { rate: 3.8,   symbol: '🏛️', name: 'Roman Denarii',    era: 'Ancient Rome (100 AD)',            note: "A denarius was a common soldier's daily pay in the Roman army." },
+  GREEK_DRACHMA:  { rate: 4.2,   symbol: '🏺', name: 'Greek Drachmas',   era: 'Classical Greece (400 BC)',        note: "One drachma could buy a sheep in ancient Athens." },
+  GEMS:           { rate: 0.01,  symbol: '💎', name: 'Fantasy Gems',      era: 'The Realm of Imagination',        note: "Accepted at most taverns and dragon hoards. Exchange rate subject to wizard fees." }
+};
+
+/** Swap the From and To currency selects. */
+function swapCurrencies() {
+  const f = document.getElementById('currFrom');
+  const t = document.getElementById('currTo');
+  [f.value, t.value] = [t.value, f.value];
+}
+
+/**
+ * Convert an amount between two currencies (or into a historical currency).
+ * Shows an easter-egg banner for historical/fantasy targets.
+ */
 function convertCurrency() {
-    const value = parseFloat(document.getElementById('currencyFromValue').value) || 0;
-    const fromUnit = document.getElementById('currencyFromUnit').value;
-    const toUnit = document.getElementById('currencyToUnit').value;
-    
-    if (!value) return;
-    const inUSD = value / CURRENCIES[fromUnit];
-    const result = (inUSD * CURRENCIES[toUnit]).toFixed(2);
-    document.getElementById('currencyToValue').value = result;
+  const amount = parseFloat(document.getElementById('currAmount').value) || 0;
+  const from   = document.getElementById('currFrom').value;
+  const to     = document.getElementById('currTo').value;
+  const bigEl  = document.getElementById('currResultBig');
+  const subEl  = document.getElementById('currResultSub');
+  const easter = document.getElementById('currEasterEgg');
+  easter.classList.remove('show');
+
+  // Historical / easter-egg currencies
+  if (HISTORICAL[to]) {
+    const h      = HISTORICAL[to];
+    const usd    = amount / (RATES[from] || 1);
+    const result = (usd * h.rate).toFixed(2);
+    bigEl.textContent = `${h.symbol} ${result} ${h.name}`;
+    subEl.textContent = h.era;
+    easter.innerHTML  = `<strong>${h.symbol} Historical Context</strong>${h.note}<br>
+      <em style="opacity:0.7;font-size:0.8em">Note: Values are approximate purchasing-power equivalents for educational fun.</em>`;
+    easter.classList.add('show');
+    return;
+  }
+
+  // Standard currency conversion
+  const fromRate = RATES[from];
+  const toRate   = RATES[to];
+  if (!fromRate || !toRate) { bigEl.textContent = 'Unknown currency'; return; }
+
+  const result = (amount / fromRate) * toRate;
+
+  const fmt = (n, sym) => {
+    if (sym === 'BTC') return n.toFixed(6) + ' ₿';
+    if (sym === 'ETH') return n.toFixed(4) + ' Ξ';
+    if (sym === 'JPY' || sym === 'KRW') return Math.round(n).toLocaleString() + ' ' + sym;
+    return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + sym;
+  };
+
+  bigEl.textContent = fmt(result, to);
+  subEl.textContent = `1 ${from} = ${fmt(toRate / fromRate, to)} • Live approximate rates`;
 }
 
-function convertLength() {
-    const value = parseFloat(document.getElementById('lengthFromValue').value) || 0;
-    const fromUnit = document.getElementById('lengthFromUnit').value;
-    const toUnit = document.getElementById('lengthToUnit').value;
-    
-    if (!value || !LENGTH_UNITS[fromUnit] || !LENGTH_UNITS[toUnit]) return;
-    const inMeters = value / LENGTH_UNITS[fromUnit].base;
-    const result = (inMeters * LENGTH_UNITS[toUnit].base).toFixed(6);
-    document.getElementById('lengthToValue').value = result;
+/* ═══════════════════════════════════════════════
+   MEASUREMENT CONVERTER
+   ═══════════════════════════════════════════════ */
+
+/**
+ * All supported measurement categories.
+ * Each entry has: units (short codes), labels (display names),
+ * and toBase (conversion factor to a canonical SI base unit).
+ */
+const MEASURES = {
+  length: {
+    units:  ['mm','cm','m','km','in','ft','yd','mi','nmi','light-year'],
+    labels: ['Millimeters (mm)','Centimeters (cm)','Meters (m)','Kilometers (km)',
+             'Inches (in)','Feet (ft)','Yards (yd)','Miles (mi)',
+             'Nautical Miles','Light-Years'],
+    toBase: [0.001, 0.01, 1, 1000, 0.0254, 0.3048, 0.9144, 1609.344, 1852, 9.461e15]
+  },
+  weight: {
+    units:  ['mg','g','kg','t','oz','lb','st','ton'],
+    labels: ['Milligrams (mg)','Grams (g)','Kilograms (kg)','Metric Tons (t)',
+             'Ounces (oz)','Pounds (lb)','Stone (st)','Short Tons (US)'],
+    toBase: [0.000001, 0.001, 1, 1000, 0.0283495, 0.453592, 6.35029, 907.185]
+  },
+  volume: {
+    units:  ['ml','l','m3','tsp','tbsp','fl oz','cup','pt','qt','gal'],
+    labels: ['Milliliters (ml)','Liters (L)','Cubic Meters (m³)','Teaspoons',
+             'Tablespoons','Fluid Ounces','Cups','Pints','Quarts','Gallons (US)'],
+    toBase: [0.001, 1, 1000, 0.00492892, 0.0147868, 0.0295735, 0.236588, 0.473176, 0.946353, 3.78541]
+  },
+  area: {
+    units:  ['mm2','cm2','m2','km2','in2','ft2','yd2','acre','ha','mi2'],
+    labels: ['sq mm','sq cm','sq m','sq km','sq in','sq ft','sq yd','Acres','Hectares','sq mi'],
+    toBase: [1e-6, 1e-4, 1, 1e6, 6.452e-4, 0.0929, 0.8361, 4046.86, 1e4, 2.59e6]
+  },
+  speed: {
+    units:  ['m/s','km/h','mph','knot','ft/s','mach'],
+    labels: ['Meters/sec (m/s)','Kilometers/hr (km/h)','Miles/hr (mph)','Knots','Feet/sec (ft/s)','Mach'],
+    toBase: [1, 1/3.6, 0.44704, 0.514444, 0.3048, 343]
+  },
+  energy: {
+    units:  ['J','kJ','cal','kcal','Wh','kWh','BTU','eV'],
+    labels: ['Joules (J)','Kilojoules (kJ)','Calories (cal)','Kilocalories (kcal)',
+             'Watt-hours (Wh)','Kilowatt-hours (kWh)','BTU','Electron-volts (eV)'],
+    toBase: [1, 1000, 4.184, 4184, 3600, 3.6e6, 1055.06, 1.602e-19]
+  }
+};
+
+/** Currently selected measurement category. */
+let currentMeasCat = 'length';
+
+/**
+ * Switch the active measurement category and repopulate dropdowns.
+ * @param {HTMLElement|null} btn - The chip button that was clicked.
+ * @param {string}           cat - Key into MEASURES.
+ */
+function setMeasureCategory(btn, cat) {
+  document.querySelectorAll('.tip').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  currentMeasCat = cat;
+  populateMeasureSelects();
 }
 
-function convertWeight() {
-    const value = parseFloat(document.getElementById('weightFromValue').value) || 0;
-    const fromUnit = document.getElementById('weightFromUnit').value;
-    const toUnit = document.getElementById('weightToUnit').value;
-    
-    if (!value || !WEIGHT_UNITS[fromUnit] || !WEIGHT_UNITS[toUnit]) return;
-    const inKg = value / WEIGHT_UNITS[fromUnit].base;
-    const result = (inKg * WEIGHT_UNITS[toUnit].base).toFixed(6);
-    document.getElementById('weightToValue').value = result;
+/** Repopulate the From/To selects with units for the current category. */
+function populateMeasureSelects() {
+  const cat = MEASURES[currentMeasCat];
+  ['measFrom', 'measTo'].forEach((id, i) => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = cat.units.map((u, j) =>
+      `<option value="${j}">${cat.labels[j]}</option>`
+    ).join('');
+    sel.selectedIndex = i === 1 ? 1 : 0;
+  });
 }
 
+/** Swap From and To measurement unit selects. */
+function swapMeasure() {
+  const f = document.getElementById('measFrom');
+  const t = document.getElementById('measTo');
+  [f.selectedIndex, t.selectedIndex] = [t.selectedIndex, f.selectedIndex];
+}
+
+/** Perform the unit conversion and display results. */
+function convertMeasure() {
+  const cat    = MEASURES[currentMeasCat];
+  const val    = parseFloat(document.getElementById('measAmount').value);
+  const fi     = parseInt(document.getElementById('measFrom').value);
+  const ti     = parseInt(document.getElementById('measTo').value);
+  const inBase = val * cat.toBase[fi];
+  const result = inBase / cat.toBase[ti];
+  const fmt    = n => (n < 0.001 || n > 1e9) ? n.toExponential(4) : parseFloat(n.toPrecision(6)).toString();
+
+  document.getElementById('measResultBig').textContent = fmt(result) + ' ' + cat.units[ti];
+  document.getElementById('measResultSub').textContent =
+    `${val} ${cat.labels[fi]} = ${fmt(result)} ${cat.labels[ti]}`;
+}
+
+// Init measurement dropdowns on load
+populateMeasureSelects();
+
+/* ═══════════════════════════════════════════════
+   TIME ZONE CONVERTER
+   ═══════════════════════════════════════════════ */
+
+/** All supported IANA timezone identifiers with display labels. */
+const TIMEZONES = [
+  ['UTC',                  'UTC — Coordinated Universal Time'],
+  ['America/New_York',     '🇺🇸 Eastern Time (ET)'],
+  ['America/Chicago',      '🇺🇸 Central Time (CT)'],
+  ['America/Denver',       '🇺🇸 Mountain Time (MT)'],
+  ['America/Los_Angeles',  '🇺🇸 Pacific Time (PT)'],
+  ['America/Anchorage',    '🇺🇸 Alaska Time'],
+  ['Pacific/Honolulu',     '🇺🇸 Hawaii Time'],
+  ['Europe/London',        '🇬🇧 London (GMT/BST)'],
+  ['Europe/Paris',         '🇫🇷 Paris (CET/CEST)'],
+  ['Europe/Berlin',        '🇩🇪 Berlin'],
+  ['Europe/Moscow',        '🇷🇺 Moscow (MSK)'],
+  ['Asia/Dubai',           '🇦🇪 Dubai (GST)'],
+  ['Asia/Kolkata',         '🇮🇳 India (IST)'],
+  ['Asia/Shanghai',        '🇨🇳 China (CST)'],
+  ['Asia/Tokyo',           '🇯🇵 Japan (JST)'],
+  ['Australia/Sydney',     '🇦🇺 Sydney (AEST)'],
+  ['Pacific/Auckland',     '🇳🇿 Auckland (NZST)'],
+];
+
+/** Populate timezone dropdowns and set the current time as default. */
+function populateTZ() {
+  ['tzFrom', 'tzTo'].forEach((id, i) => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = TIMEZONES.map(([v, l]) =>
+      `<option value="${v}">${l}</option>`
+    ).join('');
+    sel.selectedIndex = i === 0 ? 0 : 7;
+  });
+  const now = new Date();
+  document.getElementById('tzTime').value = now.toISOString().slice(0, 16);
+}
+
+/** Swap the From and To timezone selects. */
+function swapTZ() {
+  const f = document.getElementById('tzFrom');
+  const t = document.getElementById('tzTo');
+  [f.value, t.value] = [t.value, f.value];
+}
+
+/** Convert the entered datetime from one timezone to another. */
 function convertTime() {
-    const value = parseFloat(document.getElementById('timeFromValue').value) || 0;
-    const fromUnit = document.getElementById('timeFromUnit').value;
-    const toUnit = document.getElementById('timeToUnit').value;
-    
-    if (!value || !TIME_UNITS[fromUnit] || !TIME_UNITS[toUnit]) return;
-    const inSeconds = value / TIME_UNITS[fromUnit].base;
-    const result = (inSeconds * TIME_UNITS[toUnit].base).toFixed(6);
-    document.getElementById('timeToValue').value = result;
+  const dt     = document.getElementById('tzTime').value;
+  const fromTZ = document.getElementById('tzFrom').value;
+  const toTZ   = document.getElementById('tzTo').value;
+  if (!dt) return;
+
+  try {
+    const d = new Date(dt + (fromTZ === 'UTC' ? 'Z' : ''));
+    const opts = {
+      timeZone: toTZ,
+      weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', hour12: true
+    };
+    document.getElementById('tzResultBig').textContent = d.toLocaleString('en-US', opts);
+    document.getElementById('tzResultSub').textContent = `Converted to ${toTZ}`;
+  } catch (e) {
+    document.getElementById('tzResultBig').textContent = 'Error converting time';
+  }
 }
 
-function convertTemperature() {
-    const value = parseFloat(document.getElementById('tempFromValue').value) || 0;
-    const fromUnit = document.getElementById('tempFromUnit').value;
-    const toUnit = document.getElementById('tempToUnit').value;
-    
-    if (fromUnit === toUnit) {
-        document.getElementById('tempToValue').value = value.toFixed(2);
-        return;
-    }
-    
-    let celsius = value;
-    if (fromUnit === 'F') celsius = (value - 32) * 5/9;
-    else if (fromUnit === 'K') celsius = value - 273.15;
-    
-    let result = celsius;
-    if (toUnit === 'F') result = (celsius * 9/5) + 32;
-    else if (toUnit === 'K') result = celsius + 273.15;
-    
-    document.getElementById('tempToValue').value = result.toFixed(2);
+// Init timezone dropdowns on load
+populateTZ();
+
+/**
+ * Convert a duration from one time unit to another.
+ * Uses the option value as a multiplier (seconds) for each unit.
+ */
+function convertDuration() {
+  const val    = parseFloat(document.getElementById('durAmount').value) || 0;
+  const from   = parseFloat(document.getElementById('durFrom').value);
+  const to     = parseFloat(document.getElementById('durTo').value);
+  const result = val * from / to;
+  const label  = document.getElementById('durTo').options[document.getElementById('durTo').selectedIndex].text;
+  document.getElementById('durResultBig').textContent =
+    parseFloat(result.toPrecision(6)).toString() + ' ' + label;
 }
 
-function convertVolume() {
-    const value = parseFloat(document.getElementById('volumeFromValue').value) || 0;
-    const fromUnit = document.getElementById('volumeFromUnit').value;
-    const toUnit = document.getElementById('volumeToUnit').value;
-    
-    if (!value || !VOLUME_UNITS[fromUnit] || !VOLUME_UNITS[toUnit]) return;
-    const inLiters = value / VOLUME_UNITS[fromUnit].base;
-    const result = (inLiters * VOLUME_UNITS[toUnit].base).toFixed(6);
-    document.getElementById('volumeToValue').value = result;
+/* ═══════════════════════════════════════════════
+   TEMPERATURE CONVERTER
+   ═══════════════════════════════════════════════ */
+
+/**
+ * Convert a temperature value to Celsius.
+ * @param {number} val  - Input value.
+ * @param {string} unit - Source unit: 'C' | 'F' | 'K' | 'R'.
+ * @returns {number} Value in Celsius.
+ */
+function toC(val, unit) {
+  if (unit === 'C') return val;
+  if (unit === 'F') return (val - 32) * 5 / 9;
+  if (unit === 'K') return val - 273.15;
+  if (unit === 'R') return (val - 491.67) * 5 / 9;
 }
 
-function convertSpeed() {
-    const value = parseFloat(document.getElementById('speedFromValue').value) || 0;
-    const fromUnit = document.getElementById('speedFromUnit').value;
-    const toUnit = document.getElementById('speedToUnit').value;
-    
-    if (!value || !SPEED_UNITS[fromUnit] || !SPEED_UNITS[toUnit]) return;
-    const inMps = value / SPEED_UNITS[fromUnit].base;
-    const result = (inMps * SPEED_UNITS[toUnit].base).toFixed(6);
-    document.getElementById('speedToValue').value = result;
+/**
+ * Convert a Celsius value to a target temperature unit.
+ * @param {number} c    - Input in Celsius.
+ * @param {string} unit - Target unit: 'C' | 'F' | 'K' | 'R'.
+ * @returns {number} Value in the target unit.
+ */
+function fromC(c, unit) {
+  if (unit === 'C') return c;
+  if (unit === 'F') return c * 9 / 5 + 32;
+  if (unit === 'K') return c + 273.15;
+  if (unit === 'R') return (c + 273.15) * 9 / 5;
 }
 
-function convertArea() {
-    const value = parseFloat(document.getElementById('areaFromValue').value) || 0;
-    const fromUnit = document.getElementById('areaFromUnit').value;
-    const toUnit = document.getElementById('areaToUnit').value;
-    
-    if (!value || !AREA_UNITS[fromUnit] || !AREA_UNITS[toUnit]) return;
-    const inM2 = value / AREA_UNITS[fromUnit].base;
-    const result = (inM2 * AREA_UNITS[toUnit].base).toFixed(6);
-    document.getElementById('areaToValue').value = result;
+/** Swap the From and To temperature selects. */
+function swapTemp() {
+  const f = document.getElementById('tempFrom');
+  const t = document.getElementById('tempTo');
+  [f.value, t.value] = [t.value, f.value];
 }
 
-function convertGaming() {
-    const xp = parseFloat(document.getElementById('gamingXP').value) || 0;
-    const game = document.getElementById('gamingGame').value;
-    const skill = document.getElementById('gamingSkill').value;
-    
-    if (!xp || !GAMES[game]) return;
-    
-    const baseRate = GAMES[game].baseXpPerHour;
-    const multiplier = SKILL_MULTIPLIERS[skill];
-    const actualRate = baseRate * multiplier;
-    
-    const hours = (xp / actualRate).toFixed(2);
-    const days = (hours / 24).toFixed(2);
-    const weeks = (hours / 168).toFixed(2);
-    
-    const gameName = GAMES[game].name;
-    const gameType = GAMES[game].type;
-    
-    const resultText = `${xp.toLocaleString()} XP in ${gameName} (${gameType})\nTime: ${hours} hours | ${days} days non-stop | ${weeks} weeks casual (4h/day)`;
-    
-    const resultDiv = document.getElementById('gamingResult');
-    document.getElementById('gamingResultText').textContent = resultText;
-    resultDiv.classList.remove('hidden');
+/**
+ * Convert temperature and display the primary result plus a
+ * quick-grid showing all four unit equivalents simultaneously.
+ */
+function convertTemp() {
+  const val    = parseFloat(document.getElementById('tempVal').value);
+  const from   = document.getElementById('tempFrom').value;
+  const to     = document.getElementById('tempTo').value;
+  const c      = toC(val, from);
+  const result = fromC(c, to);
+
+  document.getElementById('tempResultBig').textContent =
+    parseFloat(result.toPrecision(6)) + '°' + to;
+
+  const units = ['C', 'F', 'K', 'R'];
+  const syms  = ['°C', '°F', 'K', '°R'];
+  const names = ['Celsius', 'Fahrenheit', 'Kelvin', 'Rankine'];
+
+  document.getElementById('tempAllResult').innerHTML =
+    '<div class="quick-grid">' +
+    units.map((u, i) => `
+      <div class="quick-card">
+        <div class="qc-label">${names[i]}</div>
+        <div class="qc-value">${parseFloat(fromC(c, u).toPrecision(6))} ${syms[i]}</div>
+      </div>`).join('') +
+    '</div>';
 }
 
-function convertLanguage() {
-    const input = document.getElementById('languageInput').value.toLowerCase().trim();
-    const toLang = document.getElementById('languageToLang').value;
-    
-    if (!input) return;
-    
-    const langData = LANGUAGES[toLang];
-    let result = '';
-    
-    if (langData.type === 'fantasy' && langData.translations) {
-        result = langData.translations[input] || `Not in dictionary. Try: ${Object.keys(langData.translations).join(', ')}`;
-    } else {
-        result = 'Use API integration for real language translation';
-    }
-    
-    const resultDiv = document.getElementById('languageResult');
-    document.getElementById('languageResultText').innerHTML = `<strong>${langData.name}:</strong> ${result}`;
-    resultDiv.classList.remove('hidden');
+/* ═══════════════════════════════════════════════
+   DATA STORAGE CONVERTER
+   ═══════════════════════════════════════════════ */
+
+/**
+ * Convert a data-size value between storage units.
+ * Option values represent the number of bits in that unit.
+ */
+function convertData() {
+  const val    = parseFloat(document.getElementById('dataVal').value) || 0;
+  const from   = parseFloat(document.getElementById('dataFrom').value);
+  const to     = parseFloat(document.getElementById('dataTo').value);
+  const bits   = val * from;
+  const result = bits / to;
+  const label  = document.getElementById('dataTo')
+    .options[document.getElementById('dataTo').selectedIndex].text
+    .replace(/\(.*\)/, '').trim();
+
+  document.getElementById('dataResultBig').textContent =
+    parseFloat(result.toPrecision(6)).toString() + ' ' + label;
+}
+
+/* ═══════════════════════════════════════════════
+   EASTER EGGS
+   ═══════════════════════════════════════════════ */
+
+/**
+ * Launch a secret conversion or fun fact panel.
+ * Some are computed locally; others call Claude for richer AI-generated content.
+ *
+ * @param {string} type - One of:
+ *   'bananas' | 'moon' | 'speed-light' |
+ *   'pirate-gold' | 'medieval-silver' | 'roman' | 'elvish' | 'navi'
+ */
+async function launchEaster(type) {
+  const el = document.getElementById('easterContent');
+  el.innerHTML = '<div style="padding:1rem;color:var(--text3);text-align:center;">Loading… ✨</div>';
+
+  /* ── LOCAL COMPUTATIONS ── */
+
+  if (type === 'bananas') {
+    const weight = prompt('Enter weight in kg:') || '70';
+    const kg     = parseFloat(weight) || 70;
+    const count  = (kg / 0.118).toFixed(0);
+    el.innerHTML = `<div class="easter-reveal show">
+      <strong>🍌 ${kg} kg = ${parseInt(count).toLocaleString()} Bananas</strong>
+      An average banana weighs about 118 grams.
+      So that object weighs ${count} bananas!
+      Scientists actually use "nanobananas" as an informal unit of radiation dose.
+    </div>`;
+    return;
+  }
+
+  if (type === 'moon') {
+    const weight = prompt('Enter your weight in kg:') || '70';
+    const kg     = parseFloat(weight) || 70;
+    const bodies = [
+      ['Moon 🌕',    0.165],
+      ['Mars 🔴',    0.376],
+      ['Jupiter 🟤', 2.528],
+      ['Sun ☀️',     27.9],
+      ['Pluto 🧊',   0.063]
+    ];
+    el.innerHTML = `<div class="easter-reveal show">
+      <strong>🚀 Your weight across the solar system</strong>
+      <div class="quick-grid" style="margin-top:10px;">
+        ${bodies.map(([b, g]) =>
+          `<div class="quick-card">
+            <div class="qc-label">${b}</div>
+            <div class="qc-value">${(kg * g).toFixed(1)} kg</div>
+          </div>`
+        ).join('')}
+      </div>
+    </div>`;
+    return;
+  }
+
+  if (type === 'speed-light') {
+    const speed = prompt('Enter speed (mph):') || '100';
+    const mph   = parseFloat(speed) || 100;
+    const c     = 670_616_629; // mph
+    const pct   = (mph / c * 100).toExponential(3);
+    el.innerHTML = `<div class="easter-reveal show">
+      <strong>🚀 ${mph.toLocaleString()} mph = ${pct}% of the speed of light</strong>
+      At that speed it would take you ${(1e17 / mph / 8766).toExponential(2)} years to travel one light-year.
+      The Voyager 1 probe travels at ~38,000 mph, which is ${(38000 / c * 100).toExponential(3)}% the speed of light.
+    </div>`;
+    return;
+  }
+
+  /* ── AI-POWERED EASTER EGGS ── */
+
+  const aiPrompts = {
+    'pirate-gold':     'Give me a fun, historically-flavored response: if I had $100 USD in the Golden Age of Piracy (1680–1730), how many Spanish gold doubloons would that be? Include the historical exchange context and a pirate joke. Keep it to 3 sentences max.',
+    'medieval-silver': 'In a fun, historically-flavored way: if I had $100 USD in Medieval England around 1300 AD, how many silver shillings or pennies would that be? What could I buy with it? Keep it to 3 sentences max.',
+    'roman':           'In a fun way: if I had $100 USD in Ancient Rome around 100 AD, how many Roman denarii would that be? What could I buy? Keep it to 3 sentences max.',
+    'elvish':          "Give me the Elvish (Quenya) words for numbers 1 through 10, formatted as a nice list like \"1 — Minë\". Be accurate to Tolkien's published work.",
+    'navi':            "Give me 5 useful Na'vi phrases from James Cameron's Avatar with their English meanings and pronunciation guide. Be accurate to the published Na'vi language.",
+  };
+
+  const prompt = aiPrompts[type];
+  if (!prompt) {
+    el.innerHTML = `<div class="easter-reveal show">Unknown secret mode.</div>`;
+    return;
+  }
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await response.json();
+    const text = data.content?.[0]?.text || 'No response.';
+    el.innerHTML = `<div class="easter-reveal show">
+      <strong>✨ Secret Knowledge</strong>
+      ${text.replace(/\n/g, '<br>')}
+    </div>`;
+  } catch (e) {
+    el.innerHTML = `<div class="easter-reveal show">Failed to load secret content. The wizard is busy.</div>`;
+  }
 }
