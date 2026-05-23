@@ -1,611 +1,572 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniAlter - Universal Converter</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        :root {
-            --primary: #333;
-            --secondary: #666;
-            --accent: #999;
-        }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body { 
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            color: #1a1a1a;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 0 16px;
-        }
-        
-        .header {
-            background: white;
-            border-bottom: 1px solid #e0e0e0;
-            padding: 40px 0;
-            margin-bottom: 40px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        }
-        
-        .header h1 {
-            font-size: 42px;
-            font-weight: 800;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
-        }
-        
-        .header p {
-            font-size: 16px;
-            color: #666;
-            margin-bottom: 24px;
-        }
-        
-        .glass {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-            padding: 32px;
-        }
-        
-        .theme-selector {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 32px;
-        }
-        
-        .theme-btn {
-            padding: 10px 18px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 13px;
-            color: #666;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        
-        .theme-btn:hover {
-            border-color: #d0d0d0;
-            background: #fafafa;
-        }
-        
-        .theme-btn.active {
-            border-color: var(--primary);
-            background: var(--primary);
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-        }
-        
-        .converter-tabs-header {
-            display: flex;
-            gap: 24px;
-            margin-bottom: 32px;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 16px;
-            overflow-x: auto;
-            scroll-behavior: smooth;
-        }
-        
-        .tab-btn {
-            transition: all 0.2s ease;
-            border: none;
-            background: transparent;
-            color: var(--secondary);
-            font-weight: 500;
-            font-size: 14px;
-            padding: 8px 0;
-            position: relative;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        
-        .tab-btn::after {
-            content: '';
-            position: absolute;
-            bottom: -18px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--primary);
-            transform: scaleX(0);
-            transition: transform 0.2s ease;
-        }
-        
-        .tab-btn.active {
-            color: var(--primary);
-            font-weight: 600;
-        }
-        
-        .tab-btn.active::after {
-            transform: scaleX(1);
-        }
-        
-        .tab-btn:hover:not(.active) {
-            color: var(--accent);
-        }
-        
-        .converter-section {
-            background: #fafafa;
-            border-radius: 10px;
-            padding: 24px;
-            margin-bottom: 24px;
-        }
-        
-        .converter-section label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: #555;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        input[type="number"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid #d0d0d0;
-            border-radius: 8px;
-            font-size: 14px;
-            background: white;
-            color: #333;
-            font-family: inherit;
-            transition: all 0.2s ease;
-        }
-        
-        input[type="number"]:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.08);
-            background: white;
-        }
-        
-        .accent-glow:focus { 
-            outline: none; 
-            border-color: var(--primary); 
-            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.08);
-        }
-        
-        button[id*="ConvertBtn"] {
-            width: 100%;
-            padding: 12px 24px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 16px;
-        }
-        
-        button[id*="ConvertBtn"]:hover {
-            background: var(--secondary);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-        }
-        
-        .result-box {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 16px;
-            border-left: 4px solid var(--primary);
-        }
-        
-        .result-box p {
-            color: #333;
-            font-size: 14px;
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 32px 0;
-            color: #999;
-            font-size: 13px;
-            border-top: 1px solid #e0e0e0;
-            margin-top: 48px;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="OmniConvert — the universal translator and converter. Language, currency, measurement, time, temperature, and secret Easter Egg modes." />
+  <meta name="author" content="OmniConvert" />
+  <title>OmniConvert — Translate Everything</title>
 
-        .theme-toggle-btn {
-            display: none;
-            background: transparent;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 8px;
-            color: var(--primary);
-        }
+  <!-- ── Favicon (emoji via SVG data URI) ── -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⟳</text></svg>" />
 
-        .theme-selector.hidden {
-            display: none;
-        }
-
-        /* Mobile Responsive Design */
-        @media (max-width: 768px) {
-            .header {
-                padding: 24px 0;
-                margin-bottom: 24px;
-            }
-
-            .header h1 {
-                font-size: 28px;
-                margin-bottom: 4px;
-            }
-
-            .header p {
-                font-size: 14px;
-                margin-bottom: 16px;
-            }
-
-            .theme-toggle-btn {
-                display: block;
-            }
-
-            .theme-selector {
-                gap: 8px;
-                margin-bottom: 16px;
-            }
-
-            .theme-btn {
-                padding: 8px 14px;
-                font-size: 12px;
-            }
-
-            .glass {
-                padding: 20px;
-                border-radius: 8px;
-            }
-
-            .converter-tabs-header {
-                gap: 12px;
-                margin-bottom: 20px;
-                padding-bottom: 12px;
-                border-bottom: 2px solid #f0f0f0;
-            }
-
-            .tab-btn {
-                font-size: 12px;
-                padding: 6px 0;
-            }
-
-            .tab-btn::after {
-                bottom: -14px;
-                height: 2px;
-            }
-
-            .converter-section {
-                padding: 16px;
-                margin-bottom: 16px;
-            }
-
-            .converter-section label {
-                font-size: 12px;
-                margin-bottom: 6px;
-            }
-
-            input[type="number"],
-            select,
-            textarea {
-                padding: 14px 12px;
-                font-size: 16px;
-            }
-
-            button[id*="ConvertBtn"] {
-                padding: 14px 20px;
-                font-size: 14px;
-                margin-top: 12px;
-            }
-
-            .result-box {
-                padding: 14px;
-                margin-top: 12px;
-            }
-
-            .result-box p {
-                font-size: 13px;
-            }
-
-            .container {
-                padding: 0 12px;
-            }
-
-            .footer {
-                padding: 20px 0;
-                font-size: 12px;
-                margin-top: 24px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 24px;
-            }
-
-            .header p {
-                font-size: 12px;
-            }
-
-            .glass {
-                padding: 16px;
-            }
-
-            .converter-tabs-header {
-                gap: 8px;
-            }
-
-            .tab-btn {
-                font-size: 11px;
-                padding: 4px 0;
-            }
-
-            .converter-section {
-                padding: 14px;
-            }
-
-            input[type="number"],
-            select,
-            textarea {
-                padding: 12px 10px;
-                font-size: 16px;
-            }
-        }
-    </style>
+  <!-- ── Stylesheet ── -->
+  <link rel="stylesheet" href="style.css" />
 </head>
+<body>
 
-<body class="min-h-screen">
-    <!-- Header -->
-    <div class="header">
-        <div class="container">
-            <h1>OmniAlter</h1>
-            <p>The Universal Unit & Currency Converter</p>
-            <button class="theme-toggle-btn" id="themeToggleBtn">Themes</button>
-            <div class="theme-selector" id="themeSelector"></div>
+<!-- ════════════════════════════════════════
+     HEADER
+     ════════════════════════════════════════ -->
+<header>
+  <a class="logo" href="#">
+    <div class="logo-icon">⟳</div>
+    Omni<span>Convert</span>
+  </a>
+
+  <nav>
+    <button class="nav-pill active" onclick="showPanel('language')">🌐 Language</button>
+    <button class="nav-pill"        onclick="showPanel('currency')">💰 Currency</button>
+    <button class="nav-pill"        onclick="showPanel('measurement')">📐 Measurement</button>
+    <button class="nav-pill"        onclick="showPanel('time')">⏱️ Time</button>
+    <button class="nav-pill"        onclick="showPanel('easter')">🥚 Secrets</button>
+    <button class="theme-btn"       onclick="toggleTheme()" title="Toggle light / dark theme">🌙</button>
+  </nav>
+</header>
+
+<!-- ════════════════════════════════════════
+     HERO + GLOBAL SEARCH
+     ════════════════════════════════════════ -->
+<div class="hero">
+  <h1>Convert <span>Everything</span>.</h1>
+  <p>Language • Currency • Measurement • Time • Easter Eggs &amp; More</p>
+
+  <div class="search-bar">
+    <span class="search-icon">🔍</span>
+    <input
+      type="text"
+      id="globalSearch"
+      placeholder="Search: 'translate hello to Spanish', '100 USD to EUR', '5 kg to lbs'…"
+      oninput="handleSearch(this.value)"
+      autocomplete="off"
+    />
+    <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="Clear search">✕</button>
+  </div>
+
+  <div id="searchHint" aria-live="polite" style="font-size:0.82rem;color:var(--text3);margin-top:-6px;"></div>
+</div>
+
+<!-- ════════════════════════════════════════
+     CATEGORY TABS
+     ════════════════════════════════════════ -->
+<div class="tabs-wrap" role="tablist">
+  <button class="tab active"    role="tab" aria-selected="true"  onclick="switchTab(this,'language')">🌐 Language</button>
+  <button class="tab"           role="tab" aria-selected="false" onclick="switchTab(this,'currency')">💱 Currency</button>
+  <button class="tab"           role="tab" aria-selected="false" onclick="switchTab(this,'measurement')">📏 Measurement</button>
+  <button class="tab"           role="tab" aria-selected="false" onclick="switchTab(this,'time')">🕰️ Time</button>
+  <button class="tab"           role="tab" aria-selected="false" onclick="switchTab(this,'temperature')">🌡️ Temperature</button>
+  <button class="tab"           role="tab" aria-selected="false" onclick="switchTab(this,'data')">💾 Data</button>
+  <button class="tab easter-badge" role="tab" aria-selected="false" onclick="switchTab(this,'easter')"
+    style="border-color:rgba(251,191,36,0.3);color:var(--gold);">🥚 Secret Modes</button>
+</div>
+
+<!-- ════════════════════════════════════════
+     MAIN CONTENT
+     ════════════════════════════════════════ -->
+<main>
+
+  <!-- ───────────────────────────────── -->
+  <!-- PANEL: LANGUAGE                  -->
+  <!-- ───────────────────────────────── -->
+  <div class="panel active" id="panel-language" role="tabpanel">
+    <div class="converter-card">
+
+      <div class="card-header">
+        <div class="card-title">
+          🌐 Language Translator
+          <span class="ai-badge">✨ AI-Powered</span>
         </div>
+        <span class="card-badge">Context-Aware</span>
+      </div>
+
+      <div class="conv-row">
+        <!-- From side -->
+        <div class="conv-side">
+          <label class="conv-label" for="langFrom">From</label>
+          <select id="langFrom">
+            <option value="auto">🔍 Auto-detect</option>
+            <option value="English">🇺🇸 English</option>
+            <option value="Spanish">🇪🇸 Spanish</option>
+            <option value="French">🇫🇷 French</option>
+            <option value="German">🇩🇪 German</option>
+            <option value="Italian">🇮🇹 Italian</option>
+            <option value="Portuguese">🇧🇷 Portuguese</option>
+            <option value="Japanese">🇯🇵 Japanese</option>
+            <option value="Korean">🇰🇷 Korean</option>
+            <option value="Chinese">🇨🇳 Chinese (Simplified)</option>
+            <option value="Arabic">🇸🇦 Arabic</option>
+            <option value="Russian">🇷🇺 Russian</option>
+            <option value="Hindi">🇮🇳 Hindi</option>
+            <option value="Dutch">🇳🇱 Dutch</option>
+            <option value="Swedish">🇸🇪 Swedish</option>
+            <option value="Polish">🇵🇱 Polish</option>
+            <option value="Turkish">🇹🇷 Turkish</option>
+          </select>
+          <textarea
+            class="conv-input"
+            id="langInput"
+            placeholder="Type text, slang, idioms — anything…"
+            rows="4"
+            aria-label="Text to translate"
+          ></textarea>
+        </div>
+
+        <!-- Swap -->
+        <button class="swap-btn" onclick="swapLanguages()" title="Swap languages" aria-label="Swap languages">⇄</button>
+
+        <!-- To side -->
+        <div class="conv-side">
+          <label class="conv-label" for="langTo">To</label>
+          <select id="langTo">
+            <option value="Spanish">🇪🇸 Spanish</option>
+            <option value="English">🇺🇸 English</option>
+            <option value="French">🇫🇷 French</option>
+            <option value="German">🇩🇪 German</option>
+            <option value="Italian">🇮🇹 Italian</option>
+            <option value="Portuguese">🇧🇷 Portuguese</option>
+            <option value="Japanese">🇯🇵 Japanese</option>
+            <option value="Korean">🇰🇷 Korean</option>
+            <option value="Chinese">🇨🇳 Chinese (Simplified)</option>
+            <option value="Arabic">🇸🇦 Arabic</option>
+            <option value="Russian">🇷🇺 Russian</option>
+            <option value="Hindi">🇮🇳 Hindi</option>
+            <option value="Dutch">🇳🇱 Dutch</option>
+            <option value="Swedish">🇸🇪 Swedish</option>
+            <option value="Polish">🇵🇱 Polish</option>
+            <option value="Turkish">🇹🇷 Turkish</option>
+            <!-- ── Easter Egg Languages ── -->
+            <option value="Elvish (Sindarin)">🧝 Elvish (Sindarin)</option>
+            <option value="Elvish (Quenya)">🧝 Elvish (Quenya)</option>
+            <option value="Na'vi">🌿 Na'vi</option>
+            <option value="Klingon">🖖 Klingon</option>
+            <option value="Pig Latin">🐷 Pig Latin</option>
+            <option value="Old English">⚔️ Old English</option>
+            <option value="Shakespearean English">🎭 Shakespearean English</option>
+            <option value="Pirate Speak">🏴‍☠️ Pirate Speak</option>
+            <option value="Valley Girl Slang">💅 Valley Girl</option>
+            <option value="Gen Z Slang">📱 Gen Z Slang</option>
+          </select>
+
+          <!-- Result display -->
+          <div class="result-box show" id="langResult" style="min-height:110px;" aria-live="polite">
+            <div class="result-label">Translation</div>
+            <div id="langResultText" style="color:var(--text3);font-style:italic;">
+              Your translation will appear here…
+            </div>
+            <button class="copy-btn" onclick="copyResult('langResultText')">Copy</button>
+          </div>
+        </div>
+      </div><!-- /.conv-row -->
+
+      <!-- Example chips -->
+      <div style="margin-top:10px;">
+        <div class="tip-row">
+          <span style="font-size:0.75rem;color:var(--text3);margin-top:5px;">Try:</span>
+          <button class="tip" onclick="setLangExample('no cap this is bussin fr fr')">Gen Z slang</button>
+          <button class="tip" onclick="setLangExample('break a leg tonight!')">Idiom</button>
+          <button class="tip" onclick="setLangExample('You only live once so make it count')">YOLO phrase</button>
+          <button class="tip" onclick="setLangExample('it is what it is')">Phrase</button>
+        </div>
+      </div>
+
+      <button class="convert-btn" onclick="translateText()" id="translateBtn">✨ Translate</button>
+
+      <!-- Easter egg fun fact -->
+      <div class="easter-reveal" id="langEasterEgg" aria-live="polite"></div>
+    </div>
+  </div><!-- /#panel-language -->
+
+  <!-- ───────────────────────────────── -->
+  <!-- PANEL: CURRENCY                  -->
+  <!-- ───────────────────────────────── -->
+  <div class="panel" id="panel-currency" role="tabpanel">
+    <div class="converter-card">
+
+      <div class="card-header">
+        <div class="card-title">💱 Currency Converter</div>
+        <span class="card-badge">Live Rates</span>
+      </div>
+
+      <div class="conv-row">
+        <div class="conv-side">
+          <label class="conv-label" for="currAmount">Amount &amp; From</label>
+          <input type="number" class="conv-input" id="currAmount" value="100" min="0" step="any" aria-label="Amount" />
+          <select id="currFrom" aria-label="From currency">
+            <option value="USD">🇺🇸 USD — US Dollar</option>
+            <option value="EUR">🇪🇺 EUR — Euro</option>
+            <option value="GBP">🇬🇧 GBP — British Pound</option>
+            <option value="JPY">🇯🇵 JPY — Japanese Yen</option>
+            <option value="CAD">🇨🇦 CAD — Canadian Dollar</option>
+            <option value="AUD">🇦🇺 AUD — Australian Dollar</option>
+            <option value="CHF">🇨🇭 CHF — Swiss Franc</option>
+            <option value="CNY">🇨🇳 CNY — Chinese Yuan</option>
+            <option value="INR">🇮🇳 INR — Indian Rupee</option>
+            <option value="MXN">🇲🇽 MXN — Mexican Peso</option>
+            <option value="BRL">🇧🇷 BRL — Brazilian Real</option>
+            <option value="KRW">🇰🇷 KRW — South Korean Won</option>
+            <option value="SGD">🇸🇬 SGD — Singapore Dollar</option>
+            <option value="BTC">₿ BTC — Bitcoin</option>
+            <option value="ETH">Ξ ETH — Ethereum</option>
+          </select>
+        </div>
+
+        <button class="swap-btn" onclick="swapCurrencies()" title="Swap currencies" aria-label="Swap currencies">⇄</button>
+
+        <div class="conv-side">
+          <label class="conv-label" for="currTo">To</label>
+          <select id="currTo" aria-label="To currency">
+            <option value="EUR">🇪🇺 EUR — Euro</option>
+            <option value="USD">🇺🇸 USD — US Dollar</option>
+            <option value="GBP">🇬🇧 GBP — British Pound</option>
+            <option value="JPY">🇯🇵 JPY — Japanese Yen</option>
+            <option value="CAD">🇨🇦 CAD — Canadian Dollar</option>
+            <option value="AUD">🇦🇺 AUD — Australian Dollar</option>
+            <option value="CHF">🇨🇭 CHF — Swiss Franc</option>
+            <option value="CNY">🇨🇳 CNY — Chinese Yuan</option>
+            <option value="INR">🇮🇳 INR — Indian Rupee</option>
+            <option value="MXN">🇲🇽 MXN — Mexican Peso</option>
+            <option value="BRL">🇧🇷 BRL — Brazilian Real</option>
+            <option value="KRW">🇰🇷 KRW — South Korean Won</option>
+            <option value="SGD">🇸🇬 SGD — Singapore Dollar</option>
+            <!-- ── Easter Egg Currencies ── -->
+            <option value="GOLD_DOUBLOON">🏴‍☠️ Gold Doubloons (Pirate Era)</option>
+            <option value="SILVER_COIN">⚔️ Silver Shillings (Medieval)</option>
+            <option value="ROMAN_DENARIUS">🏛️ Roman Denarii</option>
+            <option value="GREEK_DRACHMA">🏺 Greek Drachmas</option>
+            <option value="GEMS">💎 Fantasy Gems</option>
+          </select>
+
+          <div class="result-box show" id="currResult" style="min-height:88px;" aria-live="polite">
+            <div class="result-label">Converted Amount</div>
+            <div class="result-big" id="currResultBig">—</div>
+            <div class="result-sub" id="currResultSub">Select currencies and click convert</div>
+          </div>
+        </div>
+      </div><!-- /.conv-row -->
+
+      <button class="convert-btn" onclick="convertCurrency()">Convert Currency</button>
+      <div class="easter-reveal" id="currEasterEgg" aria-live="polite"></div>
+      <div id="currQuickGrid"></div>
+    </div>
+  </div><!-- /#panel-currency -->
+
+  <!-- ───────────────────────────────── -->
+  <!-- PANEL: MEASUREMENT               -->
+  <!-- ───────────────────────────────── -->
+  <div class="panel" id="panel-measurement" role="tabpanel">
+    <div class="converter-card">
+
+      <div class="card-header">
+        <div class="card-title">📏 Measurement Converter</div>
+        <span class="card-badge">All Units</span>
+      </div>
+
+      <!-- Category chips -->
+      <div style="margin-bottom:12px;">
+        <div class="conv-label" style="margin-bottom:6px;">Category</div>
+        <div class="tip-row" role="group" aria-label="Measurement category">
+          <button class="tip active" onclick="setMeasureCategory(this,'length')">📏 Length</button>
+          <button class="tip"        onclick="setMeasureCategory(this,'weight')">⚖️ Weight</button>
+          <button class="tip"        onclick="setMeasureCategory(this,'volume')">🧴 Volume</button>
+          <button class="tip"        onclick="setMeasureCategory(this,'area')">⬛ Area</button>
+          <button class="tip"        onclick="setMeasureCategory(this,'speed')">💨 Speed</button>
+          <button class="tip"        onclick="setMeasureCategory(this,'energy')">⚡ Energy</button>
+        </div>
+      </div>
+
+      <div class="conv-row">
+        <div class="conv-side">
+          <label class="conv-label" for="measAmount">Value &amp; From</label>
+          <input type="number" class="conv-input" id="measAmount" value="1" step="any" aria-label="Value" />
+          <select id="measFrom" aria-label="From unit"></select>
+        </div>
+
+        <button class="swap-btn" onclick="swapMeasure()" title="Swap units" aria-label="Swap units">⇄</button>
+
+        <div class="conv-side">
+          <label class="conv-label" for="measTo">To</label>
+          <select id="measTo" aria-label="To unit"></select>
+          <div class="result-box show" id="measResult" style="min-height:72px;" aria-live="polite">
+            <div class="result-label">Result</div>
+            <div class="result-big" id="measResultBig">—</div>
+            <div class="result-sub" id="measResultSub">Enter a value and click convert</div>
+          </div>
+        </div>
+      </div><!-- /.conv-row -->
+
+      <button class="convert-btn" onclick="convertMeasure()">Convert</button>
+      <div id="measQuickGrid"></div>
+    </div>
+  </div><!-- /#panel-measurement -->
+
+  <!-- ───────────────────────────────── -->
+  <!-- PANEL: TIME                       -->
+  <!-- ───────────────────────────────── -->
+  <div class="panel" id="panel-time" role="tabpanel">
+
+    <!-- Time Zone Converter -->
+    <div class="converter-card">
+      <div class="card-header">
+        <div class="card-title">🕰️ Time Zone Converter</div>
+        <span class="card-badge">World Clock</span>
+      </div>
+
+      <div class="conv-row">
+        <div class="conv-side">
+          <label class="conv-label" for="tzFrom">From Timezone</label>
+          <select id="tzFrom" aria-label="From timezone"></select>
+          <input type="datetime-local" class="conv-input" id="tzTime" aria-label="Date and time" />
+        </div>
+
+        <button class="swap-btn" onclick="swapTZ()" title="Swap timezones" aria-label="Swap timezones">⇄</button>
+
+        <div class="conv-side">
+          <label class="conv-label" for="tzTo">To Timezone</label>
+          <select id="tzTo" aria-label="To timezone"></select>
+          <div class="result-box show" id="tzResult" style="min-height:72px;" aria-live="polite">
+            <div class="result-label">Converted Time</div>
+            <div class="result-big" id="tzResultBig">—</div>
+            <div class="result-sub" id="tzResultSub">Select timezones and click convert</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="convert-btn" onclick="convertTime()">Convert Time</button>
     </div>
 
-    <!-- Main Content -->
-    <div class="container">
-        <div class="glass">
-            <!-- Converter Type Tabs -->
-            <div class="converter-tabs-header">
-                <button class="tab-btn active" data-converter="currency">Currency</button>
-                <button class="tab-btn" data-converter="length">Length</button>
-                <button class="tab-btn" data-converter="weight">Weight</button>
-                <button class="tab-btn" data-converter="time">Time</button>
-                <button class="tab-btn" data-converter="temperature">Temperature</button>
-                <button class="tab-btn" data-converter="volume">Volume</button>
-                <button class="tab-btn" data-converter="speed">Speed</button>
-                <button class="tab-btn" data-converter="area">Area</button>
-                <button class="tab-btn" data-converter="gaming">Gaming</button>
-                <button class="tab-btn" data-converter="language">Language</button>
-            </div>
+    <!-- Duration Converter -->
+    <div class="converter-card">
+      <div class="card-header">
+        <div class="card-title">⏱️ Duration Converter</div>
+      </div>
 
-            <!-- Converter Container -->
-            <!-- Converter Container -->
-            <div id="converterContent" class="space-y-6">
-                <!-- Currency Converter (default) -->
-                <div id="currency-converter" class="converter-tab">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                        <div class="converter-section">
-                            <label>From Currency</label>
-                            <input type="number" id="currencyFromValue" placeholder="Enter amount" value="1">
-                            <select id="currencyFromUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                        <div class="converter-section">
-                            <label>To Currency</label>
-                            <input type="number" id="currencyToValue" placeholder="Result" readonly>
-                            <select id="currencyToUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Length Converter -->
-                <div id="length-converter" class="converter-tab hidden">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                        <div class="converter-section">
-                            <label>From Length</label>
-                            <input type="number" id="lengthFromValue" placeholder="Enter value" value="1">
-                            <select id="lengthFromUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                        <div class="converter-section">
-                            <label>To Length</label>
-                            <input type="number" id="lengthToValue" placeholder="Result" readonly>
-                            <select id="lengthToUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Weight Converter -->
-                <div id="weight-converter" class="converter-tab hidden">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                        <div class="converter-section">
-                            <label>From Weight</label>
-                            <input type="number" id="weightFromValue" placeholder="Enter value" value="1">
-                            <select id="weightFromUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                        <div class="converter-section">
-                            <label>To Weight</label>
-                            <input type="number" id="weightToValue" placeholder="Result" readonly>
-                            <select id="weightToUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Time Converter -->
-                <div id="time-converter" class="converter-tab hidden">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                        <div class="converter-section">
-                            <label>From Time</label>
-                            <input type="number" id="timeFromValue" placeholder="Enter value" value="1">
-                            <select id="timeFromUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                        <div class="converter-section">
-                            <label>To Time</label>
-                            <input type="number" id="timeToValue" placeholder="Result" readonly>
-                            <select id="timeToUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Temperature Converter -->
-                <div id="temperature-converter" class="converter-tab hidden">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                        <div class="converter-section">
-                            <label>From Temperature</label>
-                            <input type="number" id="tempFromValue" placeholder="Enter value" value="0">
-                            <select id="tempFromUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                        <div class="converter-section">
-                            <label>To Temperature</label>
-                            <input type="number" id="tempToValue" placeholder="Result" readonly>
-                            <select id="tempToUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Volume Converter -->
-                <div id="volume-converter" class="converter-tab hidden">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                        <div class="converter-section">
-                            <label>From Volume</label>
-                            <input type="number" id="volumeFromValue" placeholder="Enter value" value="1">
-                            <select id="volumeFromUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                        <div class="converter-section">
-                            <label>To Volume</label>
-                            <input type="number" id="volumeToValue" placeholder="Result" readonly>
-                            <select id="volumeToUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Speed Converter -->
-                <div id="speed-converter" class="converter-tab hidden">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                        <div class="converter-section">
-                            <label>From Speed</label>
-                            <input type="number" id="speedFromValue" placeholder="Enter value" value="1">
-                            <select id="speedFromUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                        <div class="converter-section">
-                            <label>To Speed</label>
-                            <input type="number" id="speedToValue" placeholder="Result" readonly>
-                            <select id="speedToUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Area Converter -->
-                <div id="area-converter" class="converter-tab hidden">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                        <div class="converter-section">
-                            <label>From Area</label>
-                            <input type="number" id="areaFromValue" placeholder="Enter value" value="1">
-                            <select id="areaFromUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                        <div class="converter-section">
-                            <label>To Area</label>
-                            <input type="number" id="areaToValue" placeholder="Result" readonly>
-                            <select id="areaToUnit" class="accent-glow" style="margin-top: 8px;">
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Gaming Converter -->
-                <div id="gaming-converter" class="converter-tab hidden">
-                    <div class="converter-section">
-                        <label>Select Game</label>
-                        <select id="gamingGame" class="accent-glow" style="margin-bottom: 16px;">
-                        </select>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                            <div>
-                                <label>XP Amount</label>
-                                <input type="number" id="gamingXP" placeholder="Enter XP" value="1000">
-                            </div>
-                            <div>
-                                <label>Skill Level</label>
-                                <select id="gamingSkill" class="accent-glow">
-                                    <option value="casual">Casual (0.5x)</option>
-                                    <option value="normal">Normal (1x)</option>
-                                    <option value="hardcore">Hardcore (2x)</option>
-                                    <option value="speedrunner">Speedrunner (4x)</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="gamingResult" class="hidden result-box">
-                        <p id="gamingResultText" style="white-space: pre-line;"></p>
-                    </div>
-                </div>
-
-                <!-- Language Translator -->
-                <div id="language-converter" class="converter-tab hidden">
-                    <div class="converter-section">
-                        <label>Text to Translate</label>
-                        <textarea id="languageInput" placeholder="Enter word or phrase" rows="2" style="margin-bottom: 16px;"></textarea>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                            <div>
-                                <label>From Language</label>
-                                <select id="languageFromLang" class="accent-glow">
-                                    <option value="english">English</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label>To Language</label>
-                                <select id="languageToLang" class="accent-glow">
-                                </select>
-                            </div>
-                        </div>
-                        <button id="languageConvertBtn" style="width: 100%; padding: 12px 24px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 16px;">
-                            Translate
-                        </button>
-                    </div>
-                    <div id="languageResult" class="hidden result-box">
-                        <p id="languageResultText"></p>
-                    </div>
-                </div>
-            </div>
+      <div class="conv-row">
+        <div class="conv-side">
+          <label class="conv-label" for="durAmount">Value &amp; From</label>
+          <input type="number" class="conv-input" id="durAmount" value="1" aria-label="Duration value" />
+          <select id="durFrom" aria-label="From time unit">
+            <option value="1">Seconds</option>
+            <option value="60">Minutes</option>
+            <option value="3600">Hours</option>
+            <option value="86400">Days</option>
+            <option value="604800">Weeks</option>
+            <option value="2592000">Months (30d)</option>
+            <option value="31536000">Years</option>
+          </select>
         </div>
-    </div>
 
-    <script src="script.js"></script>
+        <button class="swap-btn" aria-label="Swap duration units">⇄</button>
+
+        <div class="conv-side">
+          <label class="conv-label" for="durTo">To</label>
+          <select id="durTo" aria-label="To time unit">
+            <option value="60">Minutes</option>
+            <option value="1">Seconds</option>
+            <option value="3600">Hours</option>
+            <option value="86400">Days</option>
+            <option value="604800">Weeks</option>
+            <option value="2592000">Months (30d)</option>
+          </select>
+          <div class="result-box show" id="durResult" style="min-height:60px;" aria-live="polite">
+            <div class="result-label">Result</div>
+            <div class="result-big" id="durResultBig">—</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="convert-btn" onclick="convertDuration()">Convert Duration</button>
+    </div>
+  </div><!-- /#panel-time -->
+
+  <!-- ───────────────────────────────── -->
+  <!-- PANEL: TEMPERATURE               -->
+  <!-- ───────────────────────────────── -->
+  <div class="panel" id="panel-temperature" role="tabpanel">
+    <div class="converter-card">
+
+      <div class="card-header">
+        <div class="card-title">🌡️ Temperature Converter</div>
+      </div>
+
+      <div class="conv-row">
+        <div class="conv-side">
+          <label class="conv-label" for="tempVal">Value &amp; From</label>
+          <input type="number" class="conv-input" id="tempVal" value="100" aria-label="Temperature value" />
+          <select id="tempFrom" aria-label="From temperature unit">
+            <option value="C">°C Celsius</option>
+            <option value="F">°F Fahrenheit</option>
+            <option value="K">K Kelvin</option>
+            <option value="R">°R Rankine</option>
+          </select>
+        </div>
+
+        <button class="swap-btn" onclick="swapTemp()" title="Swap units" aria-label="Swap temperature units">⇄</button>
+
+        <div class="conv-side">
+          <label class="conv-label" for="tempTo">To</label>
+          <select id="tempTo" aria-label="To temperature unit">
+            <option value="F">°F Fahrenheit</option>
+            <option value="C">°C Celsius</option>
+            <option value="K">K Kelvin</option>
+            <option value="R">°R Rankine</option>
+          </select>
+          <div class="result-box show" id="tempResult" style="min-height:72px;" aria-live="polite">
+            <div class="result-label">Result</div>
+            <div class="result-big" id="tempResultBig">—</div>
+            <div class="result-sub" id="tempResultSub">All conversions shown below</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="convert-btn" onclick="convertTemp()">Convert Temperature</button>
+      <div id="tempAllResult" style="margin-top:12px;" aria-live="polite"></div>
+    </div>
+  </div><!-- /#panel-temperature -->
+
+  <!-- ───────────────────────────────── -->
+  <!-- PANEL: DATA STORAGE              -->
+  <!-- ───────────────────────────────── -->
+  <div class="panel" id="panel-data" role="tabpanel">
+    <div class="converter-card">
+
+      <div class="card-header">
+        <div class="card-title">💾 Data Storage Converter</div>
+      </div>
+
+      <div class="conv-row">
+        <div class="conv-side">
+          <label class="conv-label" for="dataVal">Value &amp; From</label>
+          <input type="number" class="conv-input" id="dataVal" value="1" step="any" aria-label="Data value" />
+          <select id="dataFrom" aria-label="From data unit">
+            <option value="1">Bits (b)</option>
+            <option value="8">Bytes (B)</option>
+            <option value="1000">Kilobits (Kb)</option>
+            <option value="8000">Kilobytes (KB)</option>
+            <option value="1000000">Megabits (Mb)</option>
+            <option value="8000000">Megabytes (MB)</option>
+            <option value="8000000000">Gigabytes (GB)</option>
+            <option value="8000000000000">Terabytes (TB)</option>
+          </select>
+        </div>
+
+        <button class="swap-btn" aria-label="Swap data units">⇄</button>
+
+        <div class="conv-side">
+          <label class="conv-label" for="dataTo">To</label>
+          <select id="dataTo" aria-label="To data unit">
+            <option value="8000000000">Gigabytes (GB)</option>
+            <option value="1">Bits (b)</option>
+            <option value="8">Bytes (B)</option>
+            <option value="8000">Kilobytes (KB)</option>
+            <option value="8000000">Megabytes (MB)</option>
+            <option value="8000000000000">Terabytes (TB)</option>
+          </select>
+          <div class="result-box show" id="dataResult" style="min-height:60px;" aria-live="polite">
+            <div class="result-label">Result</div>
+            <div class="result-big" id="dataResultBig">—</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="convert-btn" onclick="convertData()">Convert</button>
+    </div>
+  </div><!-- /#panel-data -->
+
+  <!-- ───────────────────────────────── -->
+  <!-- PANEL: SECRET MODES (EASTER EGGS) -->
+  <!-- ───────────────────────────────── -->
+  <div class="panel" id="panel-easter" role="tabpanel">
+    <div class="converter-card" style="border-color:rgba(251,191,36,0.25);">
+
+      <div class="card-header">
+        <div class="card-title">🥚 Secret Conversions</div>
+        <span class="card-badge easter-badge">Hidden Gems</span>
+      </div>
+
+      <p style="font-size:0.88rem;color:var(--text2);margin-bottom:1.2rem;">
+        These are OmniConvert's secret modes. Explore historical currencies,
+        fictional languages, and absurd unit conversions.
+      </p>
+
+      <div class="quick-grid" id="easterGrid">
+        <div class="quick-card" style="cursor:pointer;border-color:rgba(251,191,36,0.2);"   onclick="launchEaster('pirate-gold')">
+          <div class="qc-label">💰 Historical</div>
+          <div class="qc-value">Gold Doubloons</div>
+          <div class="qc-unit">USD → Pirate Era (1600s)</div>
+        </div>
+        <div class="quick-card" style="cursor:pointer;border-color:rgba(124,107,255,0.2);"  onclick="launchEaster('medieval-silver')">
+          <div class="qc-label">⚔️ Historical</div>
+          <div class="qc-value">Silver Shillings</div>
+          <div class="qc-unit">USD → Medieval England</div>
+        </div>
+        <div class="quick-card" style="cursor:pointer;border-color:rgba(52,211,153,0.2);"   onclick="launchEaster('roman')">
+          <div class="qc-label">🏛️ Historical</div>
+          <div class="qc-value">Roman Denarii</div>
+          <div class="qc-unit">USD → Ancient Rome</div>
+        </div>
+        <div class="quick-card" style="cursor:pointer;border-color:rgba(251,191,36,0.2);"   onclick="launchEaster('elvish')">
+          <div class="qc-label">🧝 Tolkien</div>
+          <div class="qc-value">Elvish Numbers</div>
+          <div class="qc-unit">1–10 in Quenya</div>
+        </div>
+        <div class="quick-card" style="cursor:pointer;border-color:rgba(52,211,153,0.2);"   onclick="launchEaster('bananas')">
+          <div class="qc-label">🍌 Absurd</div>
+          <div class="qc-value">Bananas</div>
+          <div class="qc-unit">Weight in bananas</div>
+        </div>
+        <div class="quick-card" style="cursor:pointer;border-color:rgba(248,113,113,0.2);"  onclick="launchEaster('speed-light')">
+          <div class="qc-label">🚀 Physics</div>
+          <div class="qc-value">% Speed of Light</div>
+          <div class="qc-unit">Any speed in mph</div>
+        </div>
+        <div class="quick-card" style="cursor:pointer;border-color:rgba(124,107,255,0.2);"  onclick="launchEaster('navi')">
+          <div class="qc-label">🌿 Avatar</div>
+          <div class="qc-value">Na'vi Phrases</div>
+          <div class="qc-unit">English → Na'vi</div>
+        </div>
+        <div class="quick-card" style="cursor:pointer;border-color:rgba(251,191,36,0.2);"   onclick="launchEaster('moon')">
+          <div class="qc-label">🌕 Space</div>
+          <div class="qc-value">Moon Weight</div>
+          <div class="qc-unit">Your weight on each body</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div id="easterContent" aria-live="polite"></div>
+    </div>
+  </div><!-- /#panel-easter -->
+
+</main>
+
+<!-- ════════════════════════════════════════
+     FOOTER
+     ════════════════════════════════════════ -->
+<footer>
+  <div class="footer-links">
+    <a href="#" onclick="switchTab(document.querySelector('.tab'),'language')">Language</a>
+    <a href="#" onclick="switchTab(null,'currency')">Currency</a>
+    <a href="#" onclick="switchTab(null,'measurement')">Measurement</a>
+    <a href="#" onclick="switchTab(null,'time')">Time</a>
+    <a href="#" onclick="switchTab(null,'temperature')">Temperature</a>
+    <a href="#" onclick="switchTab(null,'easter')">Easter Eggs</a>
+    <span style="color:var(--border2)">|</span>
+    <span>Powered by Claude AI</span>
+  </div>
+  <div>© 2025 OmniConvert &mdash; Convert Everything, Everywhere</div>
+</footer>
+
+<!-- ── JavaScript ── -->
+<script src="app.js"></script>
+
 </body>
-
 </html>
